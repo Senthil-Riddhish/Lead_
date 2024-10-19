@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import ErrorResponse from "../../Utils/ErrorResponse";
+import EmployeeModel from "../EmployeeData";
 
 const UserSchema = new mongoose.Schema({
     firstname: { type: String, required: true},
@@ -13,11 +15,7 @@ const UserSchema = new mongoose.Schema({
 {
     timestamps: true,
 }
-);
-
-UserSchema.methods.generateJwtToken = function () {
-    return jwt.sign({ user: this._id.toString() }, "LeadContactByElection");
-  };
+);  
   
 UserSchema.statics.findByEmailAndPhone = async ({ email, phoneNumber }) => {
     // check whether email exist
@@ -25,7 +23,7 @@ UserSchema.statics.findByEmailAndPhone = async ({ email, phoneNumber }) => {
     const checkUserByPhone = await UserModel.findOne({ phoneNumber });
   
     if (checkUserByEmail || checkUserByPhone) {
-      throw new Error("User Already Exist...!");
+        throw new ErrorResponse("User Already Exist...!", 409);
     }
   
     return false;
@@ -34,12 +32,27 @@ UserSchema.statics.findByEmailAndPhone = async ({ email, phoneNumber }) => {
 UserSchema.statics.findByEmailAndPassword = async ({ email, password }) => {
     // check whether email exist
     const user = await UserModel.findOne({ email });
-    if (!user) throw new Error("User does no exist!!!");
-  
-    // Compare password
-    const doesPasswordMatch = await bcrypt.compare(password, user.password);
-  
-    if (!doesPasswordMatch) throw new Error("invalid Password!!!");
+    if (!user) {
+        // throw new ErrorResponse("User does not exist!", 401);
+        console.log("Employee");
+        
+        const empdata = await EmployeeModel.findOne({ email });
+        if (!empdata) {
+            throw new ErrorResponse("Account does not exist!", 401);
+        } else {
+            const doesPasswordMatch = await bcrypt.compare(password, empdata.password);
+            if (!doesPasswordMatch) throw new ErrorResponse("Invalid password!", 401);
+            console.log("employee");
+            empdata["role"] = 1
+            return empdata
+        }
+    } else {
+        // Compare password
+        const doesPasswordMatch = await bcrypt.compare(password, user.password);
+        if (!doesPasswordMatch) throw new ErrorResponse("Invalid password!", 401);
+        console.log("admin");
+        user["role"] = 0
+    }
   
     return user;
 };
@@ -65,4 +78,5 @@ UserSchema.pre("save", function (next) {
     });
 });
 
-export const UserModel = mongoose.model("Admin", UserSchema);
+const UserModel = mongoose.model("Admin", UserSchema);
+export default UserModel

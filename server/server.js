@@ -22,9 +22,13 @@ lead.use(helmet());
 
 // microservice route
 import Auth from "./API/Authentication";
+import AC from "./API/ACWithMandalVillageAllocation";
+import Allotment from './API/ACAllotmentWithEmployee';
 
 // Application Routes
 lead.use("/auth", Auth);
+lead.use('/ac', AC);
+lead.use('/allotment', Allotment);
 
 lead.get("/" , (req, res) => res.json({ message: "Setup success" }));
 

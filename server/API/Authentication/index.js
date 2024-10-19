@@ -5,9 +5,13 @@ import jwt from "jsonwebtoken";
 
 //Models
 import { UserModel } from "../../Database/Admin";
+import EmployeeModel from "../../Database/EmployeeData";
 
 // Validation
 import { ValidateSignup, ValidateSignin } from "../../Validation/authentication";
+import {ValidateEmployee} from "../../Validation/employeeValidation";
+
+import generateJwtToken from "../../Utils/generateJwtToken";
 
 const Router = express.Router();
 
@@ -21,14 +25,14 @@ Method    POST
 Router.post("/signup", async (req, res) => {
     try {
       await ValidateSignup(req.body.credentials);
-      console.log("Successfully validated");
       await UserModel.findByEmailAndPhone(req.body.credentials);
-      console.log();
       const newUser = await UserModel.create(req.body.credentials);
       //const token = newUser.generateJwtToken();
       return res.status(200).json({ message : "Successfully Admin Signup", status: "success" });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+        const statusCode = error.statusCode || 500; // Default to 500 if no status code is provided
+        const message = error.message || "Internal Server Error";
+        return res.status(statusCode).json({ error: message });
     }
 });
 
@@ -39,17 +43,40 @@ Router.post("/signup", async (req, res) => {
   Access    Public
   Method    POST  
   */
-Router.post("/signin", async (req, res) => {
+  Router.post("/signin", async (req, res) => {
     try {
       await ValidateSignin(req.body.credentials);
+      console.log("validation completed");
       
       const user = await UserModel.findByEmailAndPassword(req.body.credentials);
-  
-      const token = user.generateJwtToken();
+        console.log(user);
+        
+      // Pass the role (0 or 1) to the token generation function
+      const token = generateJwtToken(user._id.toString(), user.role); 
+      
       return res.status(200).json({ token, status: "success" });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      // Check if the error is an instance of our custom ErrorResponse class
+      const statusCode = error.statusCode || 500; // Default to 500 if no status code is provided
+      const message = error.message || "Internal Server Error";
+      return res.status(statusCode).json({ error: message });
     }
-});
+});  
+
+Router.post("/create-emp", async(req,res)=>{
+    try {
+        await ValidateEmployee(req.body.credentials)
+        console.log("validation complete");
+        await EmployeeModel.findByEmailAndPhone(req.body.credentials)
+        console.log("findByEmailAndPhone complete");
+        const newEmp = EmployeeModel.create(req.body.credentials)
+        return res.status(200).json({ message : "Employee Added Successfully", status: "success" });
+    }catch(error){
+        const statusCode = error.statusCode || 500; // Default to 500 if no status code is provided
+        const message = error.message || "Internal Server Error";
+        return res.status(statusCode).json({ error: message });
+    }
+
+})
 
 export default Router;
