@@ -24,11 +24,13 @@ lead.use(helmet());
 import Auth from "./API/Authentication";
 import AC from "./API/ACWithMandalVillageAllocation";
 import Allotment from './API/ACAllotmentWithEmployee';
+import grievances from './API/Grievances';
 
 // Application Routes
 lead.use("/auth", Auth);
 lead.use('/ac', AC);
 lead.use('/allotment', Allotment);
+lead.use('/grievances',grievances);
 
 lead.get("/" , (req, res) => res.json({ message: "Setup success" }));
 
