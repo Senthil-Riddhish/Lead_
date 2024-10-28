@@ -20,3 +20,38 @@ html, body {
 .sidebar {
   background-color: white; /* Optional: Set sidebar background color */
 }
+.sidebar-container {
+  background-color: white;
+  color: orange;
+  height: 100vh;
+}
+
+.sidebar-header {
+  color: orange;
+  font-size: 1.25rem;
+}
+
+.menu-icon {
+  font-size: 1.5rem;
+  color: orange;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  color: orange;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.sidebar-link:hover {
+  color: #ff8c00; /* Darker orange on hover */
+}
+
+.sidebar-link img {
+  margin-right: 8px;
+}
+
+.sidebar-link:focus, .sidebar-link:active, .sidebar-link:hover {
+  text-decoration: none;
+}

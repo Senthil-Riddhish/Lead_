@@ -19,7 +19,7 @@ Router.get('/getAll-ac', async (req, res) => {
 })
 
 // POST route to add a new AC record
-Router.post('/add-ac', authenticateToken, async (req, res) => {
+Router.post('/add-ac', async (req, res) => {
     try {
         // Validate the request body
         await ValidateAC(req.body);
@@ -39,7 +39,7 @@ Router.post('/add-ac', authenticateToken, async (req, res) => {
     }
 });
 
-Router.put('/edit-ac/:id', authenticateToken, async (req, res) => {
+Router.put('/edit-ac/:id', async (req, res) => {
   try {
     // Validate the request body (to make sure updated data is valid)
     await ValidateAC(req.body);
@@ -53,7 +53,7 @@ Router.put('/edit-ac/:id', authenticateToken, async (req, res) => {
     if (!updatedAC) {
       return res.status(404).json({ message: 'AC record not found' });
     }
-
+    console.log('AC record updated successfully!');
     return res.status(200).json({ status: 'success', message: 'AC record updated successfully!', data: updatedAC });
   } catch (error) {
     if (error.isJoi) {
