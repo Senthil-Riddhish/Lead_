@@ -83,7 +83,7 @@ Router.get('/getAll-mandal/:acId', authenticateToken, async(req,res) =>{
   }
 })
 
-Router.post('/add-mandal/:acId', authenticateToken, async (req, res) => {
+Router.post('/add-mandal/:acId', async (req, res) => {
   const { name } = req.body;
   const acId = req.params.acId;
   
@@ -105,10 +105,10 @@ Router.post('/add-mandal/:acId', authenticateToken, async (req, res) => {
   }
 });
 
-Router.put('/edit-mandal/:acId/:mandalId', authenticateToken, async (req, res) => {
+Router.put('/edit-mandal/:acId/:mandalId', async (req, res) => {
     const { name } = req.body;
     const { acId, mandalId } = req.params;
-  
+    console.log(acId, mandalId);
     try {
       const ac = await AC.findOneAndUpdate(
         { _id: acId, 'mandals._id': mandalId },
@@ -126,7 +126,7 @@ Router.put('/edit-mandal/:acId/:mandalId', authenticateToken, async (req, res) =
     }
   });
 
-  Router.put('/edit-village/:acId/:mandalId/:villageId', authenticateToken, async (req, res) => {
+  Router.put('/edit-village/:acId/:mandalId/:villageId', async (req, res) => {
   const { name, population } = req.body;
   const { acId, mandalId, villageId } = req.params;
 
@@ -150,7 +150,7 @@ Router.put('/edit-mandal/:acId/:mandalId', authenticateToken, async (req, res) =
   }
 });
 
-Router.post('/add-village/:acId/:mandalId', authenticateToken, async (req, res) => {
+Router.post('/add-village/:acId/:mandalId', async (req, res) => {
   const { name, population } = req.body;
   const { acId, mandalId } = req.params;
 

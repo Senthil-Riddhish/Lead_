@@ -1,0 +1,166 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
+import Swal from 'sweetalert2';
+const EmployeeDatabase = () => {
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [updateData, setUpdateData] = useState({
+    scores: {
+      xth: '',
+      xiith: '',
+      bachelors: '',
+      masters: '',
+    },
+  });
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/allotment/getAll-employees');
+      setEmployees(response.data.employees);
+    } catch (error) {
+      console.error(error);
+      alert('Error fetching employees');
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const handleUpdateClick = (employee) => {
+    setSelectedEmployee(employee);
+    setUpdateData({
+      ...employee,
+      scores: {
+        xth: employee.scores?.xth || '',
+        xiith: employee.scores?.xiith || '',
+        bachelors: employee.scores?.bachelors || '',
+        masters: employee.scores?.masters || '',
+      },
+    });
+  };
+
+  const handleChangeUpdate = (e) => {
+    const { name, value } = e.target;
+
+    if (name.startsWith('scores.')) {
+      const scoreKey = name.split('.')[1];
+      setUpdateData((prevState) => ({
+        ...prevState,
+        scores: {
+          ...prevState.scores,
+          [scoreKey]: value,
+        },
+      }));
+    } else {
+      setUpdateData((prevState) => ({ ...prevState, [name]: value }));
+    }
+  };
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.put(`http://localhost:8000/employee/edit-employee/${selectedEmployee._id}`, updateData);
+      //alert(response.data.message);
+      Swal.fire({
+        position: "top-end",
+        icon: "success",
+        title: "Successfully Updated",
+        showConfirmButton: false,
+        timer: 1500
+      });
+      setSelectedEmployee(null);
+      fetchEmployees(); // Refresh employee list
+    } catch (error) {
+      switch (error.status) {
+        case 400:
+          Swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: error.response.data.details[0],
+            showConfirmButton: false,
+            timer: 1500
+          });
+          break
+        case 500:
+          Swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: "Server Error",
+            showConfirmButton: false,
+            timer: 1500
+          });
+          break
+      }
+    }
+  };
+
+  return (
+    <Container>
+      <h2>Employee Database</h2>
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Employee Name</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {employees.map((employee) => (
+            <tr key={employee._id}>
+              <td>{employee._id}</td>
+              <td>{employee.name}</td>
+              <td>
+                <Button variant="warning" onClick={() => handleUpdateClick(employee)}>Update</Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      <Modal show={!!selectedEmployee} onHide={() => setSelectedEmployee(null)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Update Employee Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleUpdateSubmit}>
+            <div className="d-flex flex-wrap">
+              {/* Three fields per row */}
+              {[
+                { label: "Name", name: "name", type: "text" },
+                { label: "Age", name: "age", type: "number" },
+                { label: "Father's Name", name: "fatherName", type: "text" },
+                { label: "Address", name: "address", type: "text" },
+                { label: "Email", name: "email", type: "email" },
+                { label: "Phone Number", name: "phoneNumber", type: "text" },
+                { label: "PAN ID", name: "panId", type: "text" },
+                { label: "Aadhar ID", name: "aadharId", type: "text" },
+                { label: "EPF", name: "epf", type: "text" },
+                { label: "Xth Score", name: "scores.xth", type: "number" },
+                { label: "XIIth Score", name: "scores.xiith", type: "number" },
+                { label: "Bachelors Score", name: "scores.bachelors", type: "number" },
+                { label: "Masters Score", name: "scores.masters", type: "number" },
+              ].map((field, index) => (
+                <div key={index} className="col-4 mb-3 me-3">
+                  <Form.Label>{field.label}</Form.Label>
+                  <Form.Control
+                    type={field.type}
+                    name={field.name}
+                    value={field.name.startsWith("scores.") ? updateData.scores[field.name.split('.')[1]] : updateData[field.name]}
+                    onChange={handleChangeUpdate}
+                    required
+                  />
+                </div>
+              ))}
+            </div>
+            <Button type="submit" variant="primary">Update Employee</Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+    </Container>
+  );
+};
+
+export default EmployeeDatabase;

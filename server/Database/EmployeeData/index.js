@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import ErrorResponse from "../../Utils/ErrorResponse";
-import { UserModel } from "../Admin";
+import { UserModel } from "../allModels";
 
 const employeeSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -29,6 +29,7 @@ const employeeSchema = new mongoose.Schema({
 
 employeeSchema.statics.findByEmailAndPhone = async ({ email, phoneNumber }) => {
     // check whether email exist
+    console.log(email, phoneNumber);
     const checkUserByEmail = await UserModel.findOne({ email });
     const checkUserByPhone = await UserModel.findOne({ phoneNumber });
     const checkEmplyByEmail = await EmployeeModel.findOne({ email });

@@ -72,6 +72,7 @@ Router.post("/create-emp", async(req,res)=>{
         const newEmp = EmployeeModel.create(req.body.credentials)
         return res.status(200).json({ message : "Employee Added Successfully", status: "success" });
     }catch(error){
+        console.log(error);
         const statusCode = error.statusCode || 500; // Default to 500 if no status code is provided
         const message = error.message || "Internal Server Error";
         return res.status(statusCode).json({ error: message });

@@ -3,12 +3,12 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { Container, Row, Col, Navbar, Button, Offcanvas, Image } from 'react-bootstrap';
 import Home from './Pages/Home';
 import About from './Pages/About';
-import Services from './Pages/Services';
+import EmployeeManagement from './Pages/Services';
 import "./App.css";
 import { FaHome } from "react-icons/fa";
 import { RiGovernmentLine } from "react-icons/ri";
 import { TiContacts } from "react-icons/ti";
-import logo from "./Images/leadlogo.PNG"
+import logo from "./Images/leadlogo.PNG";
 
 const Sidebar = ({ toggleSidebar }) => (
   <div className="sidebar-container d-flex flex-column p-3" style={{ width: '100%', backgroundColor: 'white' }}>
@@ -24,13 +24,13 @@ const Sidebar = ({ toggleSidebar }) => (
       <RiGovernmentLine className="me-2" />
       Assembly Constitution
     </Link>
-    <Link to="/services" onClick={toggleSidebar} className="sidebar-link mb-3">
+    <Link to="/employee" onClick={toggleSidebar} className="sidebar-link mb-3">
       <RiGovernmentLine className="me-2" />
-      Services
+      Employee Management
     </Link>
-    <Link to="/contact" onClick={toggleSidebar} className="sidebar-link mb-3">
+    <Link to="/grievances" onClick={toggleSidebar} className="sidebar-link mb-3">
       <TiContacts className="me-2" />
-      Contact
+      Grievances
     </Link>
   </div>
 );
@@ -78,8 +78,8 @@ const App = () => {
             <Routes>
               <Route path="/home" element={<Home />} />
               <Route path="/about" element={<About />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/contact" element={<Services />} />
+              <Route path="/employee" element={<EmployeeManagement />} />
+              <Route path="/grievances" element={<EmployeeManagement />} />
             </Routes>
           </Col>
         </Row>

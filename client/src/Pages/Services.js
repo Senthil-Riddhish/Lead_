@@ -1,5 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
+import CreateEmployee from '../Components/CreateEmployee';
+import EmployeeDatabase from '../Components/EmployeeDatabase';
+import { Button, ButtonGroup } from 'react-bootstrap';
 
-const Services = () => <div><h1>Services</h1><p>Explore our services.</p></div>;
+const EmployeeManagement = () => {
+  const [activeSection, setActiveSection] = useState('create');
 
-export default Services;
+  return (
+    <div>
+      <ButtonGroup className="mb-3">
+        <Button
+          variant={activeSection === 'create' ? 'primary' : 'outline-primary'}
+          onClick={() => setActiveSection('create')}
+        >
+          Create Employee
+        </Button>
+        <Button
+          variant={activeSection === 'database' ? 'primary' : 'outline-primary'}
+          onClick={() => setActiveSection('database')}
+        >
+          Employee Database
+        </Button>
+      </ButtonGroup>
+
+      {activeSection === 'create' && <CreateEmployee />}
+      {activeSection === 'database' && <EmployeeDatabase />}
+    </div>
+  );
+};
+
+export default EmployeeManagement;

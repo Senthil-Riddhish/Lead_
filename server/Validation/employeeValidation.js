@@ -13,7 +13,11 @@ export const ValidateEmployee = (employeeData) => {
       aadharId: joi
       .string()
       .pattern(/^\d{4}-\d{4}-\d{4}$/) // Aadhaar format: 1234-5678-9012
-      .required(), // Aadhar ID must be exactly 12 digits
+      .required().messages({
+        'string.pattern.base': 'Please enter a valid 12-digit PAN number',
+        'any.required': 'PAN number is required',
+        'string.empty': 'PAN number cannot be empty',
+      }), // Aadhar ID must be exactly 12 digits
       scores: joi.object({
         xth: joi.number().required().min(0).max(100),         // Xth score between 0 and 100
         xiith: joi.number().required().min(0).max(100),       // XIIth score between 0 and 100

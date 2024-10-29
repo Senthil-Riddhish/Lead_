@@ -1,6 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Modal, Table, Spinner } from 'react-bootstrap';
+import { Button, Form, Modal, Table, Spinner, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+import { MdDriveFileRenameOutline } from "react-icons/md";
+import { RiGovernmentLine } from "react-icons/ri";
+import { IoPersonAddSharp } from "react-icons/io5";
+import { IoIosContact } from "react-icons/io";
+
+function errorMessage(statusCode, error) {
+    console.log(statusCode, error);
+    
+    switch (statusCode) {
+        case 400:
+            return error.response.data.message
+        case 404:
+            return "The server is unable to find the requested page or resource"
+    }
+ }
 
 const AddAC = () => {
   const [acs, setAcs] = useState([]);
@@ -33,16 +49,30 @@ const AddAC = () => {
   const handleAddAC = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log(newAC);
     try {
       const response = await axios.post('http://localhost:8000/ac/add-ac', newAC);
-  
       // Append the new AC data to the existing `acs` state
       setAcs((prevAcs) => [...prevAcs, response.data.data]);
   
       // Reset the form fields
       setNewAC({ name: '', parliamentaryConstituency: '', PCId: '', pocMobileNumber: '' });
+      Swal.fire({
+        position: "top-end",
+        icon: "success",
+        title: "Record added successfully",
+        showConfirmButton: false,
+        timer: 1500
+      });
     } catch (error) {
-      console.error('Error adding AC:', error);
+      var msg = errorMessage(error.status,error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: msg,
+        showConfirmButton: false,
+        timer: 1500
+      });
     } finally {
       setLoading(false);
     }
@@ -98,46 +128,58 @@ const AddAC = () => {
     <div className="p-4">
       <h2>Add Assembly Constituency</h2>
       <Form onSubmit={handleAddAC}>
-        <Form.Group>
-          <Form.Label>Name</Form.Label>
-          <Form.Control
-            type="text"
-            name="name"
-            value={newAC.name}
-            onChange={handleInputChange}
-            required
-          />
-        </Form.Group>
-        <Form.Group>
-          <Form.Label>Parliamentary Constituency</Form.Label>
-          <Form.Control
-            type="text"
-            name="parliamentaryConstituency"
-            value={newAC.parliamentaryConstituency}
-            onChange={handleInputChange}
-            required
-          />
-        </Form.Group>
-        <Form.Group>
-          <Form.Label>PC ID</Form.Label>
-          <Form.Control
-            type="text"
-            name="PCId"
-            value={newAC.PCId}
-            onChange={handleInputChange}
-            required
-          />
-        </Form.Group>
-        <Form.Group>
-          <Form.Label>POC Mobile Number</Form.Label>
-          <Form.Control
-            type="text"
-            name="pocMobileNumber"
-            value={newAC.pocMobileNumber}
-            onChange={handleInputChange}
-            required
-          />
-        </Form.Group>
+        <Row className="mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label><MdDriveFileRenameOutline className='me-1'/>Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="name"
+                value={newAC.name}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label><RiGovernmentLine className='me-1'/>Parliamentary Constituency</Form.Label>
+              <Form.Control
+                type="text"
+                name="parliamentaryConstituency"
+                value={newAC.parliamentaryConstituency}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className="mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label><IoPersonAddSharp className='me-1'/>PC ID</Form.Label>
+              <Form.Control
+                type="text"
+                name="PCId"
+                value={newAC.PCId}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label><IoIosContact className='me-1'/>POC Mobile Number</Form.Label>
+              <Form.Control
+                type="text"
+                name="pocMobileNumber"
+                value={newAC.pocMobileNumber}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+          </Col>
+        </Row>
         <Button type="submit" variant="primary" className="mt-3">
           {loading ? <Spinner as="span" animation="border" size="sm" /> : 'Add AC'}
         </Button>

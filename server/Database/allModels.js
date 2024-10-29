@@ -1,6 +1,6 @@
 import UserModel from './Admin';
 import EmployeeModel from './EmployeeData';
-import Allotment from './Admin/allotment';
+import Allotment from './Allotment';
 import AC from './AssemblyConstituency'; // Note: Default import
 import LetterRequest from './grievanceRefSchema';
 import EmployeeGrievancesTrack from './EmployeeGrievancesTrack';

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import AddAC from "../Components/AddAC";
-
+import Mandal from "../Components/Mandal";
+import AllotmentComponent from "../Components/Allotment";
 const About = () => {
   const [selectedContent, setSelectedContent] = useState('ac');
 
@@ -27,11 +28,11 @@ const About = () => {
             Add Mandal
           </Button>
           <Button 
-            variant="success" 
-            onClick={() => handleContentChange('village')}
+            variant="secondary" 
+            onClick={() => handleContentChange('allotment')}
             className="mx-2"
           >
-            Add Village
+            Allotment
           </Button>
         </Col>
       </Row>
@@ -44,16 +45,10 @@ const About = () => {
               <AddAC/>
             )}
             {selectedContent === 'mandal' && (
-              <div>
-                <h2>Add Mandal</h2>
-                <p>Here you can add a new Mandal to an existing AC.</p>
-              </div>
+              <Mandal/>
             )}
-            {selectedContent === 'village' && (
-              <div>
-                <h2>Add Village</h2>
-                <p>Here you can add a new Village to an existing Mandal.</p>
-              </div>
+            {selectedContent === 'allotment' && (
+              <AllotmentComponent/>
             )}
           </section>
         </Col>
