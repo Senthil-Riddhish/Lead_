@@ -4,6 +4,7 @@ import { Container, Row, Col, Navbar, Button, Offcanvas, Image } from 'react-boo
 import Home from './Pages/Home';
 import About from './Pages/About';
 import EmployeeManagement from './Pages/Services';
+import Grievances from './Pages/Grievance';
 import "./App.css";
 import { FaHome } from "react-icons/fa";
 import { RiGovernmentLine } from "react-icons/ri";
@@ -79,7 +80,7 @@ const App = () => {
               <Route path="/home" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/employee" element={<EmployeeManagement />} />
-              <Route path="/grievances" element={<EmployeeManagement />} />
+              <Route path="/grievances" element={<Grievances />} />
             </Routes>
           </Col>
         </Row>
