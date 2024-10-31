@@ -4,8 +4,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 //Models
-import { UserModel } from "../../Database/Admin";
-import EmployeeModel from "../../Database/EmployeeData";
+import { UserModel } from "../../Database/allModels";
+import EmployeeModel from "../../Database/allModels";
 
 // Validation
 import { ValidateSignup, ValidateSignin } from "../../Validation/authentication";

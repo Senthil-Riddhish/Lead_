@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 
-const CMRF = ({ data, onChange }) => (
+const CMRF = ({ formData = { patientName: '', relation: '' }, onChange }) => (
   <Form>
     <Row>
       <Col md={4}>
@@ -10,20 +10,18 @@ const CMRF = ({ data, onChange }) => (
           <Form.Control
             type="text"
             placeholder="Enter patient name"
-            value={data.patientName}
-            onChange={(e) => onChange({ ...data, patientName: e.target.value })}
+            value={formData.patientName}
+            onChange={(e) => onChange({ ...formData, patientName: e.target.value })}
           />
         </Form.Group>
       </Col>
-      {/* Add other fields similarly */}
-      {/* Example for Relation field */}
       <Col md={4}>
         <Form.Group controlId="relation">
           <Form.Label>Relation</Form.Label>
           <Form.Control
             as="select"
-            value={data.relation}
-            onChange={(e) => onChange({ ...data, relation: e.target.value })}
+            value={formData.relation}
+            onChange={(e) => onChange({ ...formData, relation: e.target.value })}
           >
             <option value="S/O">S/O</option>
             <option value="F/O">F/O</option>
@@ -31,7 +29,6 @@ const CMRF = ({ data, onChange }) => (
           </Form.Control>
         </Form.Group>
       </Col>
-      {/* Continue for other fields... */}
     </Row>
   </Form>
 );

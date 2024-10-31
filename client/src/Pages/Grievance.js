@@ -32,13 +32,13 @@ const LetterRequestForm = () => {
   const renderCategoryForm = () => {
     switch (selectedCategory) {
       case 'GrievanceRef':
-        return <GrievanceRefForm formData={formData} setFormData={setFormData} />;
+        return <GrievanceRefForm formData={formData} onChange={setFormData} />;
       case 'CMRF':
-        return <CmrfForm formData={formData} setFormData={setFormData} />;
+        return <CmrfForm formData={formData} onChange={setFormData} />;
       default:
         return null;
     }
-  };
+  };  
 
   return (
     <Container>
