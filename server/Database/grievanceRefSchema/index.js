@@ -76,6 +76,11 @@ const letterRequestSchema = new mongoose.Schema({
   jobs: jobsSchema,  // For category 3
   development: developmentSchema,  // For category 4
   transfer: transferSchema,  // For category 5
+
+  // Store the ac,mandal and village ids as a String
+  acId:{ type: String},
+  mandalId:{ type: String},
+  villageId:{ type: String},
   
   // Token for tracking
   token: { type: String, default: () => generateToken(), unique: true }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Button, Form, Container } from 'react-bootstrap';
-
+import Swal from 'sweetalert2';
 const Login = ({ setIsAuthenticated }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +20,13 @@ const Login = ({ setIsAuthenticated }) => {
       if (response.data.status === 'success') {
         sessionStorage.setItem('token', response.data.token);
         setIsAuthenticated(true);
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Successfully Signed-In",
+          showConfirmButton: false,
+          timer: 1500
+        });
       } else {
         setError('Invalid credentials');
       }

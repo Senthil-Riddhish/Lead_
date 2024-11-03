@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Navbar, Button, Offcanvas } from 'react-bootstrap';
 import Home from './Pages/Home';
 import About from './Pages/About';
@@ -11,6 +11,7 @@ import { FaHome } from "react-icons/fa";
 import { RiGovernmentLine } from "react-icons/ri";
 import { TiContacts } from "react-icons/ti";
 import logo from "./Images/leadlogo.PNG";
+import Swal from 'sweetalert2';
 
 const Sidebar = ({ toggleSidebar }) => (
   <div className="sidebar-container d-flex flex-column p-3" style={{ width: '100%', backgroundColor: 'white' }}>
@@ -38,67 +39,85 @@ const Sidebar = ({ toggleSidebar }) => (
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false); // Define showSidebar and setShowSidebar
+  const [showSidebar, setShowSidebar] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = sessionStorage.getItem('token');
     if (token) setIsAuthenticated(true);
   }, []);
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('token'); // Remove token from sessionStorage
+    setIsAuthenticated(false); // Update auth state
+    navigate("/login"); // Redirect to login page
+    Swal.fire({
+      position: "top-end",
+      icon: "success",
+      title: "Successfully Logout",
+      showConfirmButton: false,
+      timer: 1500
+    });
+  };
+
   return (
-    <Router>
-      <Container fluid>
-        {isAuthenticated ? (
-          <>
-            <Navbar bg="light" className="d-md-none">
-              <Button variant="primary" onClick={() => setShowSidebar(!showSidebar)}>
-                ☰
-              </Button>
-            </Navbar>
+    <Container fluid>
+      {isAuthenticated ? (
+        <>
+          <Navbar bg="light" className="d-md-none">
+            <Button variant="primary" onClick={() => setShowSidebar(!showSidebar)}>
+              ☰
+            </Button>
+          </Navbar>
 
-            <Row className="flex-nowrap">
-              <Offcanvas show={showSidebar} onHide={() => setShowSidebar(false)} className="d-md-none">
-                <Offcanvas.Header closeButton>
-                  <Offcanvas.Title>Menu</Offcanvas.Title>
-                </Offcanvas.Header>
-                <Offcanvas.Body>
-                  <Sidebar toggleSidebar={() => setShowSidebar(false)} />
-                </Offcanvas.Body>
-              </Offcanvas>
+          <Row className="flex-nowrap">
+            <Offcanvas show={showSidebar} onHide={() => setShowSidebar(false)} className="d-md-none">
+              <Offcanvas.Header closeButton>
+                <Offcanvas.Title>Menu</Offcanvas.Title>
+              </Offcanvas.Header>
+              <Offcanvas.Body>
+                <Sidebar toggleSidebar={() => setShowSidebar(false)} />
+              </Offcanvas.Body>
+            </Offcanvas>
 
-              <Col md={3} lg={2} className="p-0 d-none d-md-block sidebar">
-                <Sidebar />
-              </Col>
+            <Col md={3} lg={2} className="p-0 d-none d-md-block sidebar">
+              <Sidebar />
+            </Col>
 
-              <Col xs={12} md={9} lg={10} className="p-0">
-                <Navbar className="bg-body-tertiary">
-                  <Container>
-                    <Navbar.Collapse className="justify-content-end">
-                      <Navbar.Text className='me-5'>
-                        Signed in as: <a href="#login">Mark Otto</a>
-                      </Navbar.Text>
-                      <Button variant="outline-success">Search</Button>
-                    </Navbar.Collapse>
-                  </Container>
-                </Navbar>
-                <Routes>
-                  <Route path="/home" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/employee" element={<EmployeeManagement />} />
-                  <Route path="/grievances" element={<Grievances />} />
-                  <Route path="*" element={<Navigate to="/home" replace />} />
-                </Routes>
-              </Col>
-            </Row>
-          </>
-        ) : (
-          <Routes>
-            <Route path="*" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
-          </Routes>
-        )}
-      </Container>
-    </Router>
+            <Col xs={12} md={9} lg={10} className="p-0">
+              <Navbar className="bg-body-tertiary">
+                <Container>
+                  <Navbar.Collapse className="justify-content-end">
+                    <Navbar.Text className='me-5'>
+                      Signed in as: <a href="#login">Mark Otto</a>
+                    </Navbar.Text>
+                    <Button variant="outline-success" onClick={handleLogout}>Logout</Button>
+                  </Navbar.Collapse>
+                </Container>
+              </Navbar>
+              <Routes>
+                <Route path="/home" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/employee" element={<EmployeeManagement />} />
+                <Route path="/grievances" element={<Grievances />} />
+                <Route path="*" element={<Navigate to="/home" replace />} />
+              </Routes>
+            </Col>
+          </Row>
+        </>
+      ) : (
+        <Routes>
+          <Route path="*" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+        </Routes>
+      )}
+    </Container>
   );
 };
 
-export default App;
+const AppWrapper = () => (
+  <Router>
+    <App />
+  </Router>
+);
+
+export default AppWrapper;

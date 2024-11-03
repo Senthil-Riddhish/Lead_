@@ -103,5 +103,32 @@ router.get('/allotments', async (req, res) => {
   }
 });
 
+// Route to get the AC ID based on employee ID
+router.get('/allotment/:employeeId', async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    // Find the allotment for the specified employee ID
+    const allotment = await Allotment.findOne({ employee: employeeId }); // Populate AC details if needed
+
+    // Check if the allotment exists
+    if (!allotment) {
+      return res.status(404).json({ message: 'No allotment found for the specified employee' });
+    }
+    console.log(allotment);
+    // Respond with the AC ID and additional AC information
+    return res.status(200).json({
+      status: 'success',
+      allotedACId: allotment.ac
+    });
+
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      message: error.message || 'Internal server error'
+    });
+  }
+});
+
+
 module.exports = router;
   

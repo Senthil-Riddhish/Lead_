@@ -78,6 +78,26 @@ Router.post("/create-emp", async(req,res)=>{
         return res.status(statusCode).json({ error: message });
     }
 
-})
+});
+
+Router.post('/getTokeninfo', async(req, res) => {
+  // Now you can access userId and role
+  console.log(req.body);
+  const token = req.body.token;
+  console.log(token);
+  try {
+        // Replace 'YOUR_SECRET_KEY' with your actual secret key
+        const decoded = jwt.verify(token, 'LeadContactByElection');
+        // Access user information from the decoded token
+        const userId = decoded.user;
+        const role = decoded.role;
+        res.json({
+          userId,
+          role
+      });
+    } catch (err) {
+        res.status(403).json({ message: 'Invalid Token' });
+    }
+});
 
 export default Router;
