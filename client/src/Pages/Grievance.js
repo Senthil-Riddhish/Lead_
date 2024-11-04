@@ -31,7 +31,10 @@ const LetterRequestForm = () => {
     phoneNumber: '',
     letterRequired: false,
     to: '',
-    purpose: ''
+    purpose: '',
+    acId: '',
+    mandalId: '',
+    villageId: ''
   });
 
   const navigate = useNavigate();
@@ -114,7 +117,7 @@ const LetterRequestForm = () => {
     const acId = e.target.value;
     setSelectedAc(acId);
     console.log(acData[acId]?.mandals);
-    //setMandals(Object.keys(acData[acId]?.mandals || {}));
+    setMandals(Object.keys(acData[acId]?.mandals || {}));
     let arr = [];
       
       Object.entries(acData[acId]?.mandals).forEach(([key, value]) => {
@@ -138,10 +141,19 @@ const LetterRequestForm = () => {
     setVillages(acData[selectedAc]?.mandals[mandalId].village || []);
   };
 
+  const handleVillageChange=(e) => {
+    const villageId = e.target.value;
+    console.log(villageId);
+    setSelectedVillage(villageId);
+  }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value
+    }));
+  };  
 
   const handleRelationChange = (e) => {
     setFormData({ ...formData, relation: e.target.value });
@@ -149,6 +161,12 @@ const LetterRequestForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log("ac",selectedAc);
+    console.log("mandal", selectedMandal);
+    console.log("village",selectedVillage);
+    formData["acId"] = selectedAc;
+    formData["mandalId"] = selectedMandal;
+    formData["villageId"] = selectedVillage;
     console.log("Form Data to Submit:", formData);
     // Add API call here
   };
@@ -371,7 +389,7 @@ const LetterRequestForm = () => {
           <Col md={4}>
             <Form.Group controlId="formVillageSelect">
               <Form.Label>Village</Form.Label>
-              <Form.Control as="select" value={formData.village} onChange={(e) => handleInputChange(e, 'village')}>
+              <Form.Control as="select" value={selectedVillage} onChange={handleVillageChange}>
                 <option value="">Select Village</option>
                 {villages.map(village => (
                   <option key={village._id} value={village._id}>
