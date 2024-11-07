@@ -1,14 +1,24 @@
 import React, { useState } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 
-const Jobs = ({ formData = { referencePerson: '', referencePhone: '', qualification: '', otherQualification: '' }, onChange }) => {
+const Jobs = ({ formData = { JOBS: { referencePerson: '', referencePhone: '', qualification: '', otherQualification: '' } }, onChange }) => {
   const [showOtherInput, setShowOtherInput] = useState(false);
 
   const handleQualificationChange = (e) => {
     const selectedQualification = e.target.value;
     setShowOtherInput(selectedQualification === 'Others');
-    onChange({ ...formData, qualification: selectedQualification, otherQualification: '' });
+    onChange({
+      ...formData,
+      JOBS: {
+        ...formData.JOBS,
+        qualification: selectedQualification,
+        otherQualification: selectedQualification === 'Others' ? formData.JOBS.otherQualification : '' // Clear otherQualification if not 'Others'
+      }
+    });
   };
+
+  // Ensure formData.JOBS is initialized with default values if not provided
+  const JOBSData = formData.JOBS || { referencePerson: '', referencePhone: '', qualification: '', otherQualification: '' };
 
   return (
     <Form>
@@ -21,8 +31,14 @@ const Jobs = ({ formData = { referencePerson: '', referencePhone: '', qualificat
             <Form.Control
               type="text"
               placeholder="Enter reference person"
-              value={formData.referencePerson}
-              onChange={(e) => onChange({ ...formData, referencePerson: e.target.value })}
+              value={JOBSData.referencePerson}
+              onChange={(e) => onChange({
+                ...formData,
+                JOBS: {
+                  ...JOBSData,
+                  referencePerson: e.target.value
+                }
+              })}
             />
           </Form.Group>
         </Col>
@@ -32,8 +48,14 @@ const Jobs = ({ formData = { referencePerson: '', referencePhone: '', qualificat
             <Form.Control
               type="tel"
               placeholder="Enter phone number"
-              value={formData.referencePhone}
-              onChange={(e) => onChange({ ...formData, referencePhone: e.target.value })}
+              value={JOBSData.referencePhone}
+              onChange={(e) => onChange({
+                ...formData,
+                JOBS: {
+                  ...JOBSData,
+                  referencePhone: e.target.value
+                }
+              })}
             />
           </Form.Group>
         </Col>
@@ -53,7 +75,7 @@ const Jobs = ({ formData = { referencePerson: '', referencePhone: '', qualificat
               label={qualification}
               name="qualification"
               value={qualification}
-              checked={formData.qualification === qualification}
+              checked={JOBSData.qualification === qualification}
               onChange={handleQualificationChange}
             />
           ))}
@@ -65,8 +87,14 @@ const Jobs = ({ formData = { referencePerson: '', referencePhone: '', qualificat
               <Form.Control
                 type="text"
                 placeholder="Specify other qualification"
-                value={formData.otherQualification}
-                onChange={(e) => onChange({ ...formData, otherQualification: e.target.value })}
+                value={JOBSData.otherQualification}
+                onChange={(e) => onChange({
+                  ...formData,
+                  JOBS: {
+                    ...JOBSData,
+                    otherQualification: e.target.value
+                  }
+                })}
               />
             </Form.Group>
           )}

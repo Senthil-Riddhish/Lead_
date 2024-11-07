@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 
-const GrievanceRef = ({ formData = { subject: '', content: '' }, onChange }) => (
+const GrievanceRef = ({ formData = { grievanceRef: { subject: '', content: '' } }, onChange }) => (
   <Form>
     <Row>
       <Col md={4}>
@@ -10,8 +10,16 @@ const GrievanceRef = ({ formData = { subject: '', content: '' }, onChange }) => 
           <Form.Control
             type="text"
             placeholder="Enter subject"
-            value={formData.subject}
-            onChange={(e) => onChange({ ...formData, subject: e.target.value })}
+            value={formData.grievanceRef?.subject || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                grievanceRef: {
+                  ...formData.grievanceRef,
+                  subject: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>
@@ -21,8 +29,16 @@ const GrievanceRef = ({ formData = { subject: '', content: '' }, onChange }) => 
           <Form.Control
             as="textarea"
             placeholder="Enter content"
-            value={formData.content}
-            onChange={(e) => onChange({ ...formData, content: e.target.value })}
+            value={formData.grievanceRef?.content || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                grievanceRef: {
+                  ...formData.grievanceRef,
+                  content: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>

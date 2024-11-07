@@ -3,17 +3,19 @@ import { Form, Row, Col } from 'react-bootstrap';
 
 const CMRF = ({
   formData = {
-    patientName: '',
-    relation: '',
-    fatherName: '',
-    aadharCard: '',
-    phoneNumber: '',
-    address: '',
-    hospitalName: '',
-    diseaseName: '',
-    dateOfAdmission: '',
-    dateOfDischarge: '',
-    totalAmount: '',
+    cmrf: {
+      patientName: '',
+      patientrelation: '',
+      patientfatherName: '',
+      patientaadharCard: '',
+      patientphoneNumber: '',
+      patientaddress: '',
+      hospitalName: '',
+      diseaseName: '',
+      dateOfAdmission: '',
+      dateOfDischarge: '',
+      totalAmount: '',
+    }
   },
   onChange
 }) => (
@@ -27,8 +29,16 @@ const CMRF = ({
           <Form.Control
             type="text"
             placeholder="Enter patient name"
-            value={formData.patientName}
-            onChange={(e) => onChange({ ...formData, patientName: e.target.value })}
+            value={formData.cmrf?.patientName || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  patientName: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>
@@ -37,8 +47,16 @@ const CMRF = ({
           <Form.Label>Relation</Form.Label>
           <Form.Control
             as="select"
-            value={formData.relation}
-            onChange={(e) => onChange({ ...formData, relation: e.target.value })}
+            value={formData.cmrf?.relation || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  patientrelation: e.target.value
+                }
+              })
+            }
           >
             <option value="S/O">S/O</option>
             <option value="D/O">D/O</option>
@@ -52,8 +70,16 @@ const CMRF = ({
           <Form.Control
             type="text"
             placeholder="Enter father's name"
-            value={formData.fatherName}
-            onChange={(e) => onChange({ ...formData, fatherName: e.target.value })}
+            value={formData.cmrf?.fatherName || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  patientfatherName: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>
@@ -63,8 +89,16 @@ const CMRF = ({
           <Form.Control
             type="text"
             placeholder="Enter Aadhar card number"
-            value={formData.aadharCard}
-            onChange={(e) => onChange({ ...formData, aadharCard: e.target.value })}
+            value={formData.cmrf?.aadharCard || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  patientaadharCard: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>
@@ -74,8 +108,16 @@ const CMRF = ({
           <Form.Control
             type="tel"
             placeholder="Enter phone number"
-            value={formData.phoneNumber}
-            onChange={(e) => onChange({ ...formData, phoneNumber: e.target.value })}
+            value={formData.cmrf?.phoneNumber || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  patientphoneNumber: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>
@@ -85,8 +127,16 @@ const CMRF = ({
           <Form.Control
             type="text"
             placeholder="Enter address"
-            value={formData.address}
-            onChange={(e) => onChange({ ...formData, address: e.target.value })}
+            value={formData.cmrf?.address || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  patientaddress: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>
@@ -101,8 +151,16 @@ const CMRF = ({
           <Form.Control
             type="text"
             placeholder="Enter hospital name"
-            value={formData.hospitalName}
-            onChange={(e) => onChange({ ...formData, hospitalName: e.target.value })}
+            value={formData.cmrf?.hospitalName || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  hospitalName: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>
@@ -112,8 +170,16 @@ const CMRF = ({
           <Form.Control
             type="text"
             placeholder="Enter disease name"
-            value={formData.diseaseName}
-            onChange={(e) => onChange({ ...formData, diseaseName: e.target.value })}
+            value={formData.cmrf?.diseaseName || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  diseaseName: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>
@@ -122,8 +188,16 @@ const CMRF = ({
           <Form.Label>Date of Admission</Form.Label>
           <Form.Control
             type="date"
-            value={formData.dateOfAdmission}
-            onChange={(e) => onChange({ ...formData, dateOfAdmission: e.target.value })}
+            value={formData.cmrf?.dateOfAdmission || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  dateOfAdmission: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>
@@ -132,8 +206,16 @@ const CMRF = ({
           <Form.Label>Date of Discharge</Form.Label>
           <Form.Control
             type="date"
-            value={formData.dateOfDischarge}
-            onChange={(e) => onChange({ ...formData, dateOfDischarge: e.target.value })}
+            value={formData.cmrf?.dateOfDischarge || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  dateOfDischarge: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>
@@ -143,8 +225,16 @@ const CMRF = ({
           <Form.Control
             type="number"
             placeholder="Enter total amount"
-            value={formData.totalAmount}
-            onChange={(e) => onChange({ ...formData, totalAmount: e.target.value })}
+            value={formData.cmrf?.totalAmount || ''}
+            onChange={(e) =>
+              onChange({
+                ...formData,
+                cmrf: {
+                  ...formData.cmrf,
+                  totalAmount: e.target.value
+                }
+              })
+            }
           />
         </Form.Group>
       </Col>

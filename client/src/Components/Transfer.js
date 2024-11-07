@@ -1,20 +1,59 @@
-import React, { useState } from 'react';
-import { Form, Row, Col, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Form, Row, Col } from 'react-bootstrap';
 
-const Transfer = ({ formData, onChange }) => {
-    const [selectedOption, setSelectedOption] = useState('');
+const Transfer = ({ formData = { Transfer: {} }, onChange }) => {
+    const [selectedOption, setSelectedOption] = useState(formData.Transfer?.option || '');
     
+    // UseEffect to update form data only when the option changes
+    useEffect(() => {
+        // Prevent unnecessary updates if selectedOption hasn't changed
+        if (formData.Transfer?.option !== selectedOption) {
+            if (selectedOption === 'retention') {
+                onChange({
+                    ...formData,
+                    Transfer: {
+                        option: 'retention',
+                        retentionStartedAt: formData.Transfer?.retentionStartedAt || '', // Retain relevant field
+                    }
+                });
+            } else if (selectedOption === 'transfer') {
+                onChange({
+                    ...formData,
+                    Transfer: {
+                        option: 'transfer',
+                        from: formData.Transfer?.from || '',
+                        to: formData.Transfer?.to || '',
+                    }
+                });
+            } else if (selectedOption === 'recommendation' || selectedOption === 'new_post_recommendation') {
+                onChange({
+                    ...formData,
+                    Transfer: {
+                        option: selectedOption,
+                        at: formData.Transfer?.at || '',
+                        positionDesignation: formData.Transfer?.positionDesignation || '',
+                    }
+                });
+            }
+        }
+    }, [selectedOption, formData, onChange]);  // Depend on selectedOption to prevent infinite loops
+
     // Handle radio button change
     const handleOptionChange = (event) => {
         const { value } = event.target;
         setSelectedOption(value);
-        onChange({ ...formData, option: value }); // Update parent formData with selected option
     };
 
     // Handle input change for text fields
     const handleInputChange = (event) => {
         const { name, value } = event.target;
-        onChange({ ...formData, [name]: value });
+        onChange({
+            ...formData,
+            Transfer: {
+                ...formData.Transfer,
+                [name]: value
+            }
+        });
     };
 
     return (
@@ -69,7 +108,7 @@ const Transfer = ({ formData, onChange }) => {
                                 type="text"
                                 placeholder="From"
                                 name="from"
-                                value={formData.from || ''}
+                                value={formData.Transfer?.from || ''}
                                 onChange={handleInputChange}
                             />
                         </Form.Group>
@@ -81,7 +120,7 @@ const Transfer = ({ formData, onChange }) => {
                                 type="text"
                                 placeholder="To"
                                 name="to"
-                                value={formData.to || ''}
+                                value={formData.Transfer?.to || ''}
                                 onChange={handleInputChange}
                             />
                         </Form.Group>
@@ -97,7 +136,7 @@ const Transfer = ({ formData, onChange }) => {
                             <Form.Control
                                 type="date"
                                 name="retentionStartedAt"
-                                value={formData.retentionStartedAt || ''}
+                                value={formData.Transfer?.retentionStartedAt || ''}
                                 onChange={handleInputChange}
                             />
                         </Form.Group>
@@ -115,7 +154,7 @@ const Transfer = ({ formData, onChange }) => {
                                     type="text"
                                     placeholder="At"
                                     name="at"
-                                    value={formData.at || ''}
+                                    value={formData.Transfer?.at || ''}
                                     onChange={handleInputChange}
                                 />
                             </Form.Group>
@@ -127,7 +166,7 @@ const Transfer = ({ formData, onChange }) => {
                                     type="text"
                                     placeholder="Position Designation"
                                     name="positionDesignation"
-                                    value={formData.positionDesignation || ''}
+                                    value={formData.Transfer?.positionDesignation || ''}
                                     onChange={handleInputChange}
                                 />
                             </Form.Group>
