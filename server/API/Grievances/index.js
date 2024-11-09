@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import {LetterRequest, EmployeeGrievancesTrack} from  "../../Database/allModels" // Assuming the model is saved here
+import {LetterRequest, EmployeeGrievancesTrack,GrievanceRef,Others} from  "../../Database/allModels" // Assuming the model is saved here
 
 const router = express.Router();
 
@@ -156,6 +156,29 @@ router.put('/:id', async (req, res) => {
   } catch (error) {
     console.error('Error updating letter request:', error);
     res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+router.get('/:employeeId', async (req, res) => {
+  const { employeeId } = req.params;
+
+  try {
+    const employeeGrievances = await EmployeeGrievancesTrack.findOne({ employeeId })
+      .populate('grievanceCategories.GrievanceRef')
+      .populate('grievanceCategories.CMRF')
+      .populate('grievanceCategories.JOBS')
+      .populate('grievanceCategories.DEVELOPMENT')
+      .populate('grievanceCategories.Transfer')
+      .populate('grievanceCategories.Others');
+
+    if (!employeeGrievances) {
+      return res.status(404).json({ message: 'Grievances not found for this employee' });
+    }
+
+    res.json(employeeGrievances);
+  } catch (error) {
+    console.error('Error retrieving grievances:', error);
+    res.status(500).json({ message: 'Error retrieving grievances' });
   }
 });
 

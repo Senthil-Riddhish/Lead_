@@ -5,11 +5,14 @@ const grievanceRefSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   content: { type: String, required: true }
 });
+const GrievanceRef = mongoose.model('GrievanceRef', grievanceRefSchema);
 
 const otherSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   content: { type: String, required: true }
 });
+const Others = mongoose.model('Others', otherSchema);
+
 
 // Sub-schema for CMRF (Category 2)
 const cmrfSchema = new mongoose.Schema({
@@ -28,6 +31,7 @@ const cmrfSchema = new mongoose.Schema({
   dateOfDischarge: { type: Date, required: true },
   totalAmount: { type: Number, required: true }
 });
+const CMRF = mongoose.model('CMRF', cmrfSchema);
 
 // Sub-schema for JOBS (Category 3)
 const jobsSchema = new mongoose.Schema({
@@ -35,6 +39,7 @@ const jobsSchema = new mongoose.Schema({
   referencePhoneNumber: { type: String, required: true },
   qualification: { type: String, required: true }
 });
+const JOBS = mongoose.model('JOBS', jobsSchema);
 
 // Sub-schema for Development (Category 4)
 const developmentSchema = new mongoose.Schema({
@@ -44,6 +49,7 @@ const developmentSchema = new mongoose.Schema({
   issue: { type: String, required: true },
   letterIssue: { type: Boolean, required: true }
 });
+const DEVELOPMENT = mongoose.model('DEVELOPMENT', developmentSchema);
 
 // Sub-schema for Transfer (Category 5)
 const transferSchema = new mongoose.Schema({
@@ -54,6 +60,7 @@ const transferSchema = new mongoose.Schema({
   recommendationPosition: { type: String }, // Used for Recommendation/New Post Recommended
   recommendationLocation: { type: String }  // Used for Recommendation/New Post Recommended
 });
+const Transfer = mongoose.model('Transfer', transferSchema);
 
 // Main Schema
 const letterRequestSchema = new mongoose.Schema({
@@ -102,4 +109,4 @@ const generateToken = () => {
 // Create the model
 const LetterRequest = mongoose.model('LetterRequest', letterRequestSchema);
 
-export default LetterRequest;
+export { LetterRequest, Others, GrievanceRef};

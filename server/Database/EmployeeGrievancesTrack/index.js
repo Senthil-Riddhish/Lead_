@@ -8,12 +8,12 @@ const EmployeeGrievancesTrackSchema = new mongoose.Schema({
     unique: true,
   },
   grievanceCategories: {
-    GrievanceRef: [{ type: mongoose.Schema.Types.ObjectId, ref: 'GrievanceRef' }],
-    CMRF: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CMRF' }],
+    GrievanceRef: [{ type: mongoose.Schema.Types.ObjectId, ref: 'LetterRequest' }],
+    CMRF: [{ type: mongoose.Schema.Types.ObjectId, ref: 'LetterRequest' }],
     JOBS: [{ type: mongoose.Schema.Types.ObjectId, ref: 'JOBS' }],
     DEVELOPMENT: [{ type: mongoose.Schema.Types.ObjectId, ref: 'DEVELOPMENT' }],
     Transfer: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transfer' }],
-    Others: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Others' }]
+    Others: [{ type: mongoose.Schema.Types.ObjectId, ref: 'LetterRequest' }]
   }
 }, { timestamps: true });
 
