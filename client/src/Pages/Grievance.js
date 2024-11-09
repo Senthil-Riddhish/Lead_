@@ -161,14 +161,45 @@ const LetterRequestForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("ac",selectedAc);
-    console.log("mandal", selectedMandal);
-    console.log("village",selectedVillage);
-    formData["acId"] = selectedAc;
-    formData["mandalId"] = selectedMandal;
-    formData["villageId"] = selectedVillage;
+    // console.log("ac",selectedAc);
+    // console.log("mandal", selectedMandal);
+    // console.log("village",selectedVillage);
+    // formData["acId"] = selectedAc;
+    // formData["mandalId"] = selectedMandal;
+    // formData["villageId"] = selectedVillage;
     console.log("Form Data to Submit:", formData);
-    // Add API call here
+    axios.post(
+      `http://localhost:8000/grievances/${tokenInfo.userId}/${selectedCategory}/${tokenInfo.role}`,
+      formData, // send formData as the request body
+      {
+        headers: {
+          'Content-Type': 'application/json', // specify JSON content type
+        },
+      }
+    )
+    .then((response) => {
+      console.log("Response:", response.data);
+      setSelectedCategory('');
+      setFormData({
+        name: '',
+        gender: '',
+        relation: '',
+        fatherName: '',
+        age: '',
+        aadharId: '',
+        phoneNumber: '',
+        letterRequired: false,
+        to: '',
+        purpose: '',
+        acId: '',
+        mandalId: '',
+        villageId: ''
+      })
+    })
+    .catch((error) => {
+      console.log(error.status);
+      console.error("Error submitting form:", error);
+    });
   };
 
   const renderCategoryForm = () => {
@@ -176,7 +207,9 @@ const LetterRequestForm = () => {
       case 'GrievanceRef':
         return <GrievanceRefForm formData={formData} onChange={setFormData} />;
       case 'CMRF':
-        return <CmrfForm formData={formData} onChange={setFormData} />;
+        return <CmrfForm formData={formData} onChange={setFormData} userRole={tokenInfo.role}
+        acData={acData}
+        assignedAc={selectedAc}/>;
       case 'JOBS':
         return <Jobs formData={formData} onChange={setFormData} />;
       case 'DEVELOPMENT':
@@ -194,6 +227,36 @@ const LetterRequestForm = () => {
       default:
         return null;
     }
+  };
+
+  const handleCategoryClick = (category) => {
+    console.log(selectedCategory)
+    const updatedFormData = { ...formData };
+    switch (selectedCategory) {
+      case 'GrievanceRef':
+        delete updatedFormData['grievanceRef'];
+        break;
+      case 'CMRF':
+        delete updatedFormData['cmrf'];
+        break;
+      case 'JOBS':
+        delete updatedFormData['JOBS'];
+        break;
+      case 'DEVELOPMENT':
+        delete updatedFormData['DEVELOPMENT'];
+        break;
+      case 'Transfer':
+        delete updatedFormData['Transfer'];
+        break;
+      case 'Others':
+        delete updatedFormData['Others'];
+        break;
+      default:
+        console.log("No action defined for this category");
+        break;
+    }
+    setFormData(updatedFormData);
+    setSelectedCategory(category);
   };
 
   const currentDate = new Date().toLocaleDateString();
@@ -336,7 +399,7 @@ const LetterRequestForm = () => {
                 <Button
                   key={cat}
                   variant={selectedCategory === cat ? 'primary' : 'outline-primary'}
-                  onClick={() => setSelectedCategory(cat)}
+                  onClick={() => handleCategoryClick(cat)}
                   className="me-2"
                 >
                   {cat}

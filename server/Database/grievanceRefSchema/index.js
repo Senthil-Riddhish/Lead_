@@ -6,21 +6,27 @@ const grievanceRefSchema = new mongoose.Schema({
   content: { type: String, required: true }
 });
 
+const otherSchema = new mongoose.Schema({
+  subject: { type: String, required: true },
+  content: { type: String, required: true }
+});
+
 // Sub-schema for CMRF (Category 2)
 const cmrfSchema = new mongoose.Schema({
   patientName: { type: String, required: true },
-  relation: { type: String, enum: ['S/O', 'F/O', 'O/O'], required: true },  // Relation
+  relation: { type: String, enum: ['S/O', 'D/O', 'O/O'], required: true },  // Relation
   fatherName: { type: String, required: true },
   patientAadharId: { type: String, required: true },
   patientPhoneNumber: { type: String, required: true },
   address: { type: String, required: true },
+  ac: { type: mongoose.Schema.Types.ObjectId, ref: 'Mandal', required: true },
   mandal: { type: mongoose.Schema.Types.ObjectId, ref: 'Mandal', required: true },
   village: { type: mongoose.Schema.Types.ObjectId, ref: 'Village', required: true },
   hospitalName: { type: String, required: true },
   disease: { type: String, required: true },
   dateOfAdmission: { type: Date, required: true },
   dateOfDischarge: { type: Date, required: true },
-  totalIncrement: { type: Number, required: true }
+  totalAmount: { type: Number, required: true }
 });
 
 // Sub-schema for JOBS (Category 3)
@@ -36,14 +42,14 @@ const developmentSchema = new mongoose.Schema({
   village: { type: mongoose.Schema.Types.ObjectId, ref: 'Village', required: true },
   authority: { type: String, required: true },
   issue: { type: String, required: true },
-  letterIssued: { type: Boolean, required: true }
+  letterIssue: { type: Boolean, required: true }
 });
 
 // Sub-schema for Transfer (Category 5)
 const transferSchema = new mongoose.Schema({
-  transferType: { type: String, enum: ['Transfer', 'Retention', 'Recommendation', 'New Post Recommended'], required: true },
-  fromVillage: { type: mongoose.Schema.Types.ObjectId, ref: 'Village' },  // Used only for Transfer
-  toVillage: { type: mongoose.Schema.Types.ObjectId, ref: 'Village' },    // Used only for Transfer
+  transferType: { type: String, enum: ['transfer', 'retention', 'recommendation', 'new_post_recommended'], required: true },
+  fromVillage: { type: String },  // Used only for Transfer
+  toVillage: {type: String },    // Used only for Transfer
   retentionStartedAt: { type: Date },  // Used only for Retention
   recommendationPosition: { type: String }, // Used for Recommendation/New Post Recommended
   recommendationLocation: { type: String }  // Used for Recommendation/New Post Recommended
@@ -76,6 +82,7 @@ const letterRequestSchema = new mongoose.Schema({
   jobs: jobsSchema,  // For category 3
   development: developmentSchema,  // For category 4
   transfer: transferSchema,  // For category 5
+  others: otherSchema,
 
   // Store the ac,mandal and village ids as a String
   acId:{ type: String},

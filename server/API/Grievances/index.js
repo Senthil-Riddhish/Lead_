@@ -14,8 +14,8 @@ const findRequestById = async (id) => {
  * POST /api/requests/:category
  */
 // POST endpoint to add a new request for a specific category and track it
-router.post('/:employeeId/:category', async (req, res) => {
-  const { employeeId, category } = req.params;
+router.post('/:employeeId/:category/:role', async (req, res) => {
+  const { employeeId, category, role } = req.params;
 
   // Prepare the data to be saved
   const letterRequestData = {
@@ -40,19 +40,21 @@ router.post('/:employeeId/:category', async (req, res) => {
       letterRequestData.grievanceRef = req.body.grievanceRef;
       break;
     case 'Others':
-      letterRequestData.grievanceRef = req.body.grievanceRef;
+      letterRequestData.others = req.body.others;
       break;
     case 'CMRF':
       letterRequestData.cmrf = req.body.cmrf;
       break;
     case 'JOBS':
-      letterRequestData.jobs = req.body.jobs;
+      letterRequestData.jobs = req.body.JOBS;
       break;
     case 'DEVELOPMENT':
-      letterRequestData.development = req.body.development;
+      letterRequestData.development = req.body.DEVELOPMENT;
       break;
     case 'Transfer':
-      letterRequestData.transfer = req.body.transfer;
+      console.log("transfer");
+      console.log(req.body.Transfer);
+      letterRequestData["transfer"] = req.body.Transfer;
       break;
     default:
       return res.status(400).json({ message: 'Invalid category' });
@@ -64,27 +66,27 @@ router.post('/:employeeId/:category', async (req, res) => {
   try {
     // Save the data to the database
     const savedLetterRequest = await letterRequest.save();
+    if(role=="1"){
+      // Check for existing grievance tracking for the employee
+      let grievanceTracking = await EmployeeGrievancesTrack.findOne({ employeeId });
 
-    // Check for existing grievance tracking for the employee
-    let grievanceTracking = await EmployeeGrievancesTrack.findOne({ employeeId });
+      // If it doesn't exist, create a new tracking document
+      if (!grievanceTracking) {
+        grievanceTracking = new EmployeeGrievancesTrack({
+          employeeId,
+          grievanceCategories: {}
+        });
+      }
 
-    // If it doesn't exist, create a new tracking document
-    if (!grievanceTracking) {
-      grievanceTracking = new EmployeeGrievancesTrack({
-        employeeId,
-        grievanceCategories: {}
-      });
+      // Push the new letter request ID into the appropriate category
+      if (!grievanceTracking.grievanceCategories[category]) {
+        grievanceTracking.grievanceCategories[category] = [];
+      }
+      grievanceTracking.grievanceCategories[category].push(savedLetterRequest._id);
+
+      // Save the tracking document
+      await grievanceTracking.save();
     }
-
-    // Push the new letter request ID into the appropriate category
-    if (!grievanceTracking.grievanceCategories[category]) {
-      grievanceTracking.grievanceCategories[category] = [];
-    }
-    grievanceTracking.grievanceCategories[category].push(savedLetterRequest._id);
-
-    // Save the tracking document
-    await grievanceTracking.save();
-
     res.status(201).json({ message: 'Letter request added successfully', letterRequest: savedLetterRequest });
   } catch (error) {
     console.error('Error adding letter request:', error);
