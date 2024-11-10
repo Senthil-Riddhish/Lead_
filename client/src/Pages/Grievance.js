@@ -59,13 +59,37 @@ const LetterRequestForm = () => {
         .catch(() => navigate('/login'));
     }
   }, [navigate]);
+  
   useEffect(() => {
-    console.log("Received grievanceId:", grievanceId);
     if (grievanceId) {
-      console.log("Received grievanceId:", grievanceId);
-      // Perform any actions with the grievanceId, like fetching specific grievance details
+      axios.get(`http://localhost:8000/grievances/getdocument/${grievanceId}`)
+        .then(response => {
+          const letterRequestData = response.data.letterRequest;
+  
+          setFormData({
+            ...formData,
+            ...letterRequestData // Populate formData with data from response
+          });
+  
+          // Set selected AC, Mandal, and Village
+          if (letterRequestData.acId) {
+            setSelectedAc(letterRequestData.acId);
+            if (letterRequestData.mandalId) setSelectedMandal(letterRequestData.mandalId);
+            if (letterRequestData.villageId) setSelectedVillage(letterRequestData.villageId);
+          }
+          if (letterRequestData.grievanceRef) {
+            setSelectedCategory('GrievanceRef');
+          }
+  
+          // Pass the values directly to the function
+          fetchAllAcData(letterRequestData.acId, letterRequestData.mandalId, letterRequestData.villageId);
+        })
+        .catch(error => {
+          console.error("Error fetching grievance data:", error);
+        });
     }
   }, [grievanceId]);
+  
   const fetchEmployeeAcDetails = async (employeeId) => {
     try {
       const { data } = await axios.get(`http://localhost:8000/allotment/allotment/${employeeId}`);
@@ -76,18 +100,19 @@ const LetterRequestForm = () => {
       console.error("Error fetching AC details:", error);
     }
   };
-
-  const fetchAllAcData = async () => {
+  
+  const fetchAllAcData = async (allotedACId = '', allocatedMandalId = '', allocatedVillageId = '') => {
     try {
       const { data } = await axios.get('http://localhost:8000/ac/getAll-ac');
-      createAcMap(data);
+      createAcMap(data, allotedACId, allocatedMandalId, allocatedVillageId);
     } catch (error) {
       console.error("Error fetching all AC data:", error);
     }
   };
 
-  const createAcMap = (data, allotedACId = '') => {
+  const createAcMap = (data, allotedACId = '', allocatedMandalId = '', allocatedVillageId = '') => {
     const acMap = {};
+    console.log(data);
     data.data.forEach(ac => {
       acMap[ac._id] = {
         name: ac.name,
@@ -101,10 +126,9 @@ const LetterRequestForm = () => {
       };
     });
     setAcData(acMap);
-
     if (allotedACId && acMap[allotedACId]) {
       setSelectedAc(allotedACId);
-      console.log(acMap[allotedACId].mandals);
+      //console.log(acMap[allotedACId].mandals);
       let arr = [];
       
       Object.entries(acMap[allotedACId].mandals).forEach(([key, value]) => {
@@ -112,19 +136,24 @@ const LetterRequestForm = () => {
               key: key,
               value: value
           });
-          console.log("Mandal ID:", key);
-          console.log("Mandal Data:", value);
+          //console.log("Mandal ID:", key);
+          //console.log("Mandal Data:", value);
       });
       
-      console.log(arr);
+      //console.log(arr);
       setMandals(arr);
-  }  
+  } 
+  if (grievanceId) {
+    console.log("present");
+    console.log(acMap);
+    setVillages(acMap[allotedACId]?.mandals[allocatedMandalId].village || []);
+  }
   };
 
   const handleAcChange = (e) => {
     const acId = e.target.value;
     setSelectedAc(acId);
-    console.log(acData[acId]?.mandals);
+    //console.log(acData[acId]?.mandals);
     setMandals(Object.keys(acData[acId]?.mandals || {}));
     let arr = [];
       
@@ -133,8 +162,8 @@ const LetterRequestForm = () => {
               key: key,
               value: value
           });
-          console.log("Mandal ID:", key);
-          console.log("Mandal Data:", value);
+          // //console.log("Mandal ID:", key);
+          // //console.log("Mandal Data:", value);
       });
       setMandals(arr);
     setSelectedMandal('');
@@ -143,15 +172,15 @@ const LetterRequestForm = () => {
 
   const handleMandalChange = (e) => {
     const mandalId = e.target.value;
-    console.log(mandalId);
+    //console.log(mandalId);
     setSelectedMandal(mandalId);
-    console.log(acData[selectedAc]?.mandals[mandalId].village || []);
+    ////console.log(acData[selectedAc]?.mandals[mandalId].village || []);
     setVillages(acData[selectedAc]?.mandals[mandalId].village || []);
   };
 
   const handleVillageChange=(e) => {
     const villageId = e.target.value;
-    console.log(villageId);
+    ////console.log(villageId);
     setSelectedVillage(villageId);
   }
 
@@ -169,13 +198,13 @@ const LetterRequestForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // console.log("ac",selectedAc);
-    // console.log("mandal", selectedMandal);
-    // console.log("village",selectedVillage);
-    // formData["acId"] = selectedAc;
-    // formData["mandalId"] = selectedMandal;
-    // formData["villageId"] = selectedVillage;
-    console.log("Form Data to Submit:", formData);
+    //console.log("ac",selectedAc);
+    //console.log("mandal", selectedMandal);
+    //console.log("village",selectedVillage);
+    formData["acId"] = selectedAc;
+    formData["mandalId"] = selectedMandal;
+    formData["villageId"] = selectedVillage;
+    //console.log("Form Data to Submit:", formData);
     axios.post(
       `http://localhost:8000/grievances/${tokenInfo.userId}/${selectedCategory}/${tokenInfo.role}`,
       formData, // send formData as the request body
@@ -186,7 +215,7 @@ const LetterRequestForm = () => {
       }
     )
     .then((response) => {
-      console.log("Response:", response.data);
+      //console.log("Response:", response.data);
       setSelectedCategory('');
       setFormData({
         name: '',
@@ -203,9 +232,11 @@ const LetterRequestForm = () => {
         mandalId: '',
         villageId: ''
       })
+      setSelectedMandal('');
+      setSelectedVillage('');
     })
     .catch((error) => {
-      console.log(error.status);
+      //console.log(error.status);
       console.error("Error submitting form:", error);
     });
   };
@@ -238,7 +269,7 @@ const LetterRequestForm = () => {
   };
 
   const handleCategoryClick = (category) => {
-    console.log(selectedCategory)
+    //console.log(selectedCategory)
     const updatedFormData = { ...formData };
     switch (selectedCategory) {
       case 'GrievanceRef':
@@ -260,11 +291,11 @@ const LetterRequestForm = () => {
         delete updatedFormData['Others'];
         break;
       default:
-        console.log("No action defined for this category");
+        //console.log("No action defined for this category");
         break;
     }
     setFormData(updatedFormData);
-    setSelectedCategory(category);
+      setSelectedCategory(category);
   };
 
   const currentDate = new Date().toLocaleDateString();

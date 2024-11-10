@@ -28,6 +28,9 @@ router.post('/:employeeId/:category/:role', async (req, res) => {
     letterRequired: req.body.letterRequired,
     to: req.body.letterRequired ? req.body.to : undefined,
     purpose: req.body.letterRequired ? req.body.purpose : undefined,
+    acId: req.body.acId,
+    mandalId: req.body.mandalId,
+    villageId: req.body.villageId,
     category
   };
 
