@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Form, Container, Row, Col } from 'react-bootstrap';
 import GrievanceRefForm from '../Components/GrievanceRef';
 import CmrfForm from '../Components/CMRF';
@@ -36,6 +36,8 @@ const LetterRequestForm = () => {
     mandalId: '',
     villageId: ''
   });
+  const location = useLocation();
+  const grievanceId = location.state?.grievanceId || null;
 
   const navigate = useNavigate();
 
@@ -57,7 +59,13 @@ const LetterRequestForm = () => {
         .catch(() => navigate('/login'));
     }
   }, [navigate]);
-
+  useEffect(() => {
+    console.log("Received grievanceId:", grievanceId);
+    if (grievanceId) {
+      console.log("Received grievanceId:", grievanceId);
+      // Perform any actions with the grievanceId, like fetching specific grievance details
+    }
+  }, [grievanceId]);
   const fetchEmployeeAcDetails = async (employeeId) => {
     try {
       const { data } = await axios.get(`http://localhost:8000/allotment/allotment/${employeeId}`);

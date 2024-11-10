@@ -5,6 +5,7 @@ import Home from './Pages/Home';
 import About from './Pages/About';
 import EmployeeManagement from './Pages/Services';
 import Grievances from './Pages/Grievance';
+import GrievanceTable from './Pages/GrievanceTable';
 import Login from './Pages/Login'; // Import Login component
 import "./App.css";
 import { FaHome } from "react-icons/fa";
@@ -33,6 +34,10 @@ const Sidebar = ({ toggleSidebar }) => (
     <Link to="/grievances" onClick={toggleSidebar} className="sidebar-link mb-3">
       <TiContacts className="me-2" />
       Grievances
+    </Link>
+    <Link to="/allrecords" onClick={toggleSidebar} className="sidebar-link mb-3">
+      <TiContacts className="me-2" />
+      Records
     </Link>
   </div>
 );
@@ -100,6 +105,7 @@ const App = () => {
                 <Route path="/about" element={<About />} />
                 <Route path="/employee" element={<EmployeeManagement />} />
                 <Route path="/grievances" element={<Grievances />} />
+                <Route path='/allrecords' element={<GrievanceTable/>} />
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </Routes>
             </Col>

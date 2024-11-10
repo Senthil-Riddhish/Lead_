@@ -182,4 +182,25 @@ router.get('/:employeeId', async (req, res) => {
   }
 });
 
+// GET endpoint to retrieve an existing letter request by ID
+router.get('/getdocument/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find the letter request by ID
+    const letterRequest = await LetterRequest.findById(id);
+
+    if (!letterRequest) {
+      return res.status(404).json({ message: 'Letter request not found' });
+    }
+
+    // Return the letter request data
+    res.status(200).json({ message: 'Letter request retrieved successfully', letterRequest });
+  } catch (error) {
+    console.error('Error retrieving letter request:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+
 module.exports = router;
