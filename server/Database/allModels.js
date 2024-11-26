@@ -4,11 +4,13 @@ import Allotment from './Allotment';
 import AC from './AssemblyConstituency'; // Note: Default import
 import {LetterRequest,Others, GrievanceRef} from './grievanceRefSchema';
 import EmployeeGrievancesTrack from './EmployeeGrievancesTrack';
+import AssignedwithTrackingDocument from "./AssignedIdwithTrackingDocument";
 export {
     UserModel,
     AC,
     EmployeeModel,
     Allotment,
     LetterRequest,Others,GrievanceRef,
-    EmployeeGrievancesTrack
+    EmployeeGrievancesTrack,
+    AssignedwithTrackingDocument
 };

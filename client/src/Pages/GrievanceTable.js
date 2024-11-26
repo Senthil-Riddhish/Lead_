@@ -23,19 +23,21 @@ const GrievanceTable = () => {
         .then(response => {
           const { userId, role } = response.data;
           setUserInfo({ userId, role });
-          fetchGrievances(userId);
+          fetchGrievances(userId,role);
         })
         .catch(() => navigate('/login'));
     }
   }, [navigate]);
 
-  const fetchGrievances = async (userId) => {
+  const fetchGrievances = async (userId,role) => {
     try {
-      const response = await fetch(`http://localhost:8000/grievances/${userId}`);
+      console.log(userId);
+      const response = await fetch(`http://localhost:8000/grievances/getdocuments/${userId}/${role}`);
       if (!response.ok) {
         throw new Error('Failed to fetch grievances');
       }
       const data = await response.json();
+      console.log("data : ", data);
       setGrievances(data.grievanceCategories);
       setLoading(false);
     } catch (err) {

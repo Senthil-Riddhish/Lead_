@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 
-const Others = ({ formData = { others: { subject: '', content: '' } }, onChange }) => (
+const Others = ({ formData, onChange }) => (
   <Form>
     <Row>
       <Col md={4}>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Button, Form, Container, Row, Col } from 'react-bootstrap';
+import { Button, Form, Container, Row, Col, Spinner } from 'react-bootstrap';
 import GrievanceRefForm from '../Components/GrievanceRef';
 import CmrfForm from '../Components/CMRF';
 import Jobs from '../Components/Jobs';
@@ -10,10 +10,8 @@ import Others from '../Components/Others';
 import axios from 'axios';
 
 const LetterRequestForm = () => {
-  const [tokenInfo, setUserInfo] = useState({
-    userId: '',
-    role: ''
-  });
+  const [loading, setLoading] = useState(true); // Loading state
+  const [tokenInfo, setUserInfo] = useState({ userId: '', role: '' });
   const [selectedCategory, setSelectedCategory] = useState('');
   const [acData, setAcData] = useState({});
   const [mandals, setMandals] = useState([]);
@@ -21,6 +19,8 @@ const LetterRequestForm = () => {
   const [selectedAc, setSelectedAc] = useState('');
   const [selectedMandal, setSelectedMandal] = useState('');
   const [selectedVillage, setSelectedVillage] = useState('');
+  const [innerSelectedMandal, setInnerSelectedMandal] = useState('');
+  const [innerSelectedVillage, setInnerSelectedVillage] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     gender: '',
@@ -34,93 +34,118 @@ const LetterRequestForm = () => {
     purpose: '',
     acId: '',
     mandalId: '',
+    villageId: '',
+    acId: '',
+    mandalId: '',
     villageId: ''
   });
   const location = useLocation();
   const grievanceId = location.state?.grievanceId || null;
-
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = sessionStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    } else {
-      axios.post('http://localhost:8000/auth/getTokeninfo', { token })
-        .then(response => {
-          const { userId, role } = response.data;
+    const initializePage = async () => {
+      try {
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+        } else {
+          const tokenResponse = await axios.post('http://localhost:8000/auth/getTokeninfo', { token });
+          const { userId, role } = tokenResponse.data;
           setUserInfo({ userId, role });
+
           if (role === 1) {
-            fetchEmployeeAcDetails(userId);
+            await fetchEmployeeAcDetails(userId);
           } else if (role === 0) {
-            fetchAllAcData();
+            await fetchAllAcData();
           }
-        })
-        .catch(() => navigate('/login'));
-    }
-  }, [navigate]);
-  
+
+          if (grievanceId) {
+            await fetchGrievanceData(grievanceId);
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing page:', error);
+        navigate('/login');
+      } finally {
+        setLoading(false); // Set loading to false after all requests complete
+      }
+    };
+
+    initializePage();
+  }, [navigate, grievanceId]);
   useEffect(() => {
-    if (grievanceId) {
-      axios.get(`http://localhost:8000/grievances/getdocument/${grievanceId}`)
-        .then(response => {
-          const letterRequestData = response.data.letterRequest;
-  
-          setFormData({
-            ...formData,
-            ...letterRequestData // Populate formData with data from response
-          });
-  
-          // Set selected AC, Mandal, and Village
-          if (letterRequestData.acId) {
-            setSelectedAc(letterRequestData.acId);
-            if (letterRequestData.mandalId) setSelectedMandal(letterRequestData.mandalId);
-            if (letterRequestData.villageId) setSelectedVillage(letterRequestData.villageId);
-          }
-          if (letterRequestData.grievanceRef) {
-            setSelectedCategory('GrievanceRef');
-          }
-  
-          // Pass the values directly to the function
-          fetchAllAcData(letterRequestData.acId, letterRequestData.mandalId, letterRequestData.villageId);
-        })
-        .catch(error => {
-          console.error("Error fetching grievance data:", error);
-        });
+    console.log("Updated formData:", formData);
+  }, [formData]);
+
+  const fetchGrievanceData = async (grievanceId) => {
+    try {
+      const response = await axios.get(`http://localhost:8000/grievances/getdocument/${grievanceId}`);
+      const letterRequestData = response.data.letterRequest;
+      console.log("letterRequestData: ",letterRequestData);
+      
+      setFormData(letterRequestData);
+      if (letterRequestData.acId) {
+        setSelectedAc(letterRequestData.acId);
+        setSelectedMandal(letterRequestData.mandalId);
+        setSelectedVillage(letterRequestData.villageId);
+        console.log(selectedMandal);
+        if (letterRequestData.mandalId) setSelectedMandal(letterRequestData.mandalId);
+        if (letterRequestData.villageId) setSelectedVillage(letterRequestData.villageId);
+      }
+      if (letterRequestData.grievanceRef) {
+        setSelectedCategory('GrievanceRef');
+      } else if (letterRequestData.cmrf) {
+        setSelectedCategory('CMRF');
+        setInnerSelectedMandal(letterRequestData.cmrf.mandal);
+        setInnerSelectedVillage(letterRequestData.cmrf.village);
+      }  else if (letterRequestData.jobs) {
+        setSelectedCategory('JOBS')
+      }
+      else if (letterRequestData.others) {
+        setSelectedCategory('Others');
+      }
+
+      await fetchAllAcData(letterRequestData.acId, letterRequestData.mandalId, letterRequestData.villageId);
+    } catch (error) {
+      console.error('Error fetching grievance data:', error);
     }
-  }, [grievanceId]);
-  
+  };
+
   const fetchEmployeeAcDetails = async (employeeId) => {
     try {
       const { data } = await axios.get(`http://localhost:8000/allotment/allotment/${employeeId}`);
       const allotedACId = data.allotedACId;
+      setFormData({
+        ...formData,
+        acId: allotedACId
+      })
       const acDetails = await axios.get('http://localhost:8000/ac/getAll-ac');
       createAcMap(acDetails.data, allotedACId);
     } catch (error) {
-      console.error("Error fetching AC details:", error);
+      console.error('Error fetching AC details:', error);
     }
   };
-  
+
   const fetchAllAcData = async (allotedACId = '', allocatedMandalId = '', allocatedVillageId = '') => {
     try {
       const { data } = await axios.get('http://localhost:8000/ac/getAll-ac');
       createAcMap(data, allotedACId, allocatedMandalId, allocatedVillageId);
     } catch (error) {
-      console.error("Error fetching all AC data:", error);
+      console.error('Error fetching all AC data:', error);
     }
   };
 
   const createAcMap = (data, allotedACId = '', allocatedMandalId = '', allocatedVillageId = '') => {
     const acMap = {};
-    console.log(data);
-    data.data.forEach(ac => {
+    data.data.forEach((ac) => {
       acMap[ac._id] = {
         name: ac.name,
         mandals: ac.mandals.reduce((acc, mandal) => {
           acc[mandal._id] = {
             name: mandal.name,
             village: mandal.villages
-          }
+          };
           return acc;
         }, {})
       };
@@ -128,35 +153,23 @@ const LetterRequestForm = () => {
     setAcData(acMap);
     if (allotedACId && acMap[allotedACId]) {
       setSelectedAc(allotedACId);
-      //console.log(acMap[allotedACId].mandals);
-      let arr = [];
-      
-      Object.entries(acMap[allotedACId].mandals).forEach(([key, value]) => {
-          arr.push({
-              key: key,
-              value: value
-          });
-          //console.log("Mandal ID:", key);
-          //console.log("Mandal Data:", value);
-      });
-      
-      //console.log(arr);
-      setMandals(arr);
-  } 
-  if (grievanceId) {
-    console.log("present");
-    console.log(acMap);
-    setVillages(acMap[allotedACId]?.mandals[allocatedMandalId].village || []);
-  }
+      setMandals(Object.entries(acMap[allotedACId].mandals).map(([key, value]) => ({ key, value })));
+    }
+    if (grievanceId) {
+      setVillages(acMap[allotedACId]?.mandals[allocatedMandalId]?.village || []);
+    }
   };
 
   const handleAcChange = (e) => {
     const acId = e.target.value;
     setSelectedAc(acId);
-    //console.log(acData[acId]?.mandals);
+    console.log("selected ac : ",selectedAc);
     setMandals(Object.keys(acData[acId]?.mandals || {}));
     let arr = [];
-      
+    setFormData({
+      ...formData,
+      acId: acId
+    })
       Object.entries(acData[acId]?.mandals).forEach(([key, value]) => {
           arr.push({
               key: key,
@@ -165,15 +178,19 @@ const LetterRequestForm = () => {
           // //console.log("Mandal ID:", key);
           // //console.log("Mandal Data:", value);
       });
-      setMandals(arr);
+    setMandals(arr);
     setSelectedMandal('');
     setVillages([]);
   };
 
   const handleMandalChange = (e) => {
     const mandalId = e.target.value;
-    //console.log(mandalId);
+    console.log(mandalId);
     setSelectedMandal(mandalId);
+    setFormData({
+      ...formData,
+      mandalId: mandalId
+    })
     ////console.log(acData[selectedAc]?.mandals[mandalId].village || []);
     setVillages(acData[selectedAc]?.mandals[mandalId].village || []);
   };
@@ -182,6 +199,10 @@ const LetterRequestForm = () => {
     const villageId = e.target.value;
     ////console.log(villageId);
     setSelectedVillage(villageId);
+    setFormData({
+      ...formData,
+      villageId: villageId
+    })
   }
 
   const handleInputChange = (e) => {
@@ -198,57 +219,62 @@ const LetterRequestForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    //console.log("ac",selectedAc);
-    //console.log("mandal", selectedMandal);
-    //console.log("village",selectedVillage);
-    formData["acId"] = selectedAc;
-    formData["mandalId"] = selectedMandal;
-    formData["villageId"] = selectedVillage;
-    //console.log("Form Data to Submit:", formData);
-    axios.post(
-      `http://localhost:8000/grievances/${tokenInfo.userId}/${selectedCategory}/${tokenInfo.role}`,
-      formData, // send formData as the request body
-      {
-        headers: {
-          'Content-Type': 'application/json', // specify JSON content type
-        },
-      }
-    )
-    .then((response) => {
-      //console.log("Response:", response.data);
-      setSelectedCategory('');
-      setFormData({
-        name: '',
-        gender: '',
-        relation: '',
-        fatherName: '',
-        age: '',
-        aadharId: '',
-        phoneNumber: '',
-        letterRequired: false,
-        to: '',
-        purpose: '',
-        acId: '',
-        mandalId: '',
-        villageId: ''
-      })
-      setSelectedMandal('');
-      setSelectedVillage('');
+  
+    console.log("before Form Data to Submit:", formData);
+    // formData["acId"] = selectedAc;
+    // formData["mandalId"] = selectedMandal;
+    // formData["villageId"] = selectedVillage;
+   // console.log("Form Data to Submit:", formData);
+  
+    // Determine whether to make a POST or PUT request
+    const url = grievanceId
+      ? `http://localhost:8000/grievances/${grievanceId}`
+      : `http://localhost:8000/grievances/${tokenInfo.userId}/${selectedCategory}/${tokenInfo.role}`;
+  
+    const method = grievanceId ? "put" : "post"; // Use 'put' for updates, 'post' for creation
+    axios({
+      method,
+      url,
+      data: formData, // send formData as the request body
+      headers: {
+        'Content-Type': 'application/json', // specify JSON content type
+      },
     })
-    .catch((error) => {
-      //console.log(error.status);
-      console.error("Error submitting form:", error);
-    });
-  };
+      .then((response) => {
+        console.log("Response:", response.data);
+        setSelectedCategory('');
+        setFormData({
+          name: '',
+          gender: '',
+          relation: '',
+          fatherName: '',
+          age: '',
+          aadharId: '',
+          phoneNumber: '',
+          letterRequired: false,
+          to: '',
+          purpose: '',
+          acId: '',
+          mandalId: '',
+          villageId: ''
+        });
+        setSelectedMandal('');
+        setSelectedVillage('');
+      })
+      .catch((error) => {
+        console.error("Error submitting form:", error);
+      });
+  };  
 
   const renderCategoryForm = () => {
     switch (selectedCategory) {
       case 'GrievanceRef':
         return <GrievanceRefForm formData={formData} onChange={setFormData} />;
-      case 'CMRF':
+      case 'CMRF': 
+        {console.log(formData);}
         return <CmrfForm formData={formData} onChange={setFormData} userRole={tokenInfo.role}
         acData={acData}
-        assignedAc={selectedAc}/>;
+        assignedAc={selectedAc} grievanceId={grievanceId}/>;
       case 'JOBS':
         return <Jobs formData={formData} onChange={setFormData} />;
       case 'DEVELOPMENT':
@@ -258,19 +284,23 @@ const LetterRequestForm = () => {
         userRole={tokenInfo.role}
         acData={acData}
         assignedAc={selectedAc}
+        grievanceId={grievanceId}
       />
       case 'Transfer':
-        return <Transfer formData={formData} onChange={setFormData} />
+        return <Transfer formData={formData} onChange={setFormData}/>
       case 'Others':
-        return <Others formData={formData} onChange={setFormData} />
+        return <Others formData={formData} onChange={setFormData}/>
       default:
         return null;
     }
   };
 
   const handleCategoryClick = (category) => {
-    //console.log(selectedCategory)
+    console.log("Selected Category Before Update:", selectedCategory);
+  
     const updatedFormData = { ...formData };
+  
+    // Remove the specific category key based on the selected category
     switch (selectedCategory) {
       case 'GrievanceRef':
         delete updatedFormData['grievanceRef'];
@@ -288,19 +318,31 @@ const LetterRequestForm = () => {
         delete updatedFormData['Transfer'];
         break;
       case 'Others':
-        delete updatedFormData['Others'];
+        delete updatedFormData['others'];
         break;
       default:
-        //console.log("No action defined for this category");
+        console.log("No action defined for this category");
         break;
     }
-    setFormData(updatedFormData);
-      setSelectedCategory(category);
+  
+    console.log("Updated FormData Before Setting State:", updatedFormData);
+    updatedFormData.category = category;
+    setFormData(updatedFormData); // Update state
+    setSelectedCategory(category);
+    // Log the formData changes using useEffect
   };
 
   const currentDate = new Date().toLocaleDateString();
 
-  return (
+  if (loading) {
+      return (
+        <Container className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+          <Spinner animation="border" variant="primary" />
+        </Container>
+      );
+    } 
+    else {
+      return (
     <Container>
       <Row className="my-2">
         <Col>
@@ -505,14 +547,15 @@ const LetterRequestForm = () => {
         {renderCategoryForm()}
         <Row>
           <Col>
-            <Button variant="primary" type="submit">
-              Submit
-            </Button>
+          <Button variant="primary" type="submit">
+  {grievanceId ? "Update" : "Submit"}
+</Button>
           </Col>
         </Row>
       </Form>
     </Container>
   );
+}
 };
 
 export default LetterRequestForm;

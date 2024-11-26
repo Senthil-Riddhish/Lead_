@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 
-const Jobs = ({ formData = { JOBS: { referencePerson: '', referencePhone: '', qualification: '', otherQualification: '' } }, onChange }) => {
+const JOBS = ({ formData = { jobs: { referencePersonName: '', referencePhoneNumber: '', qualification: '', otherQualification: '' } }, onChange }) => {
   const [showOtherInput, setShowOtherInput] = useState(false);
 
   const handleQualificationChange = (e) => {
@@ -9,17 +9,17 @@ const Jobs = ({ formData = { JOBS: { referencePerson: '', referencePhone: '', qu
     setShowOtherInput(selectedQualification === 'Others');
     onChange({
       ...formData,
-      JOBS: {
-        ...formData.JOBS,
+      jobs: {
+        ...formData.jobs,
         qualification: selectedQualification,
-        otherQualification: selectedQualification === 'Others' ? formData.JOBS.otherQualification : '' // Clear otherQualification if not 'Others'
+        otherQualification: selectedQualification === 'Others' ? formData.jobs.otherQualification : '' // Clear otherQualification if not 'Others'
       }
     });
   };
 
-  // Ensure formData.JOBS is initialized with default values if not provided
-  const JOBSData = formData.JOBS || { referencePerson: '', referencePhone: '', qualification: '', otherQualification: '' };
-
+  // Ensure formData.jobs is initialized with default values if not provided
+  const jobsData = formData.jobs || { referencePersonName: '', referencePhoneNumber: '', qualification: '', otherQualification: '' };
+  console.log("jobsData : ",jobsData);
   return (
     <Form>
       {/* Reference Details */}
@@ -31,12 +31,12 @@ const Jobs = ({ formData = { JOBS: { referencePerson: '', referencePhone: '', qu
             <Form.Control
               type="text"
               placeholder="Enter reference person"
-              value={JOBSData.referencePerson}
+              value={jobsData.referencePersonName}
               onChange={(e) => onChange({
                 ...formData,
-                JOBS: {
-                  ...JOBSData,
-                  referencePerson: e.target.value
+                jobs: {
+                  ...jobsData,
+                  referencePersonName: e.target.value
                 }
               })}
             />
@@ -48,12 +48,12 @@ const Jobs = ({ formData = { JOBS: { referencePerson: '', referencePhone: '', qu
             <Form.Control
               type="tel"
               placeholder="Enter phone number"
-              value={JOBSData.referencePhone}
+              value={jobsData.referencePhoneNumber}
               onChange={(e) => onChange({
                 ...formData,
-                JOBS: {
-                  ...JOBSData,
-                  referencePhone: e.target.value
+                jobs: {
+                  ...jobsData,
+                  referencePhoneNumber: e.target.value
                 }
               })}
             />
@@ -75,23 +75,23 @@ const Jobs = ({ formData = { JOBS: { referencePerson: '', referencePhone: '', qu
               label={qualification}
               name="qualification"
               value={qualification}
-              checked={JOBSData.qualification === qualification}
+              checked={jobsData.qualification === qualification}
               onChange={handleQualificationChange}
             />
           ))}
 
           {/* Show other qualification input if "Others" is selected */}
-          {showOtherInput && (
+          {(showOtherInput || (formData.jobs.qualification==='Others')) && (
             <Form.Group controlId="otherQualification" className="mt-2">
               <Form.Label>Other Qualification</Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Specify other qualification"
-                value={JOBSData.otherQualification}
+                value={jobsData.otherQualification}
                 onChange={(e) => onChange({
                   ...formData,
-                  JOBS: {
-                    ...JOBSData,
+                  jobs: {
+                    ...jobsData,
                     otherQualification: e.target.value
                   }
                 })}
@@ -104,4 +104,4 @@ const Jobs = ({ formData = { JOBS: { referencePerson: '', referencePhone: '', qu
   );
 };
 
-export default Jobs;
+export default JOBS;

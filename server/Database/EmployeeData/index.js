@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import ErrorResponse from "../../Utils/ErrorResponse";
 import { UserModel } from "../allModels";
 

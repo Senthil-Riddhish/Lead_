@@ -22,7 +22,6 @@ const cmrfSchema = new mongoose.Schema({
   patientAadharId: { type: String, required: true },
   patientPhoneNumber: { type: String, required: true },
   address: { type: String, required: true },
-  ac: { type: mongoose.Schema.Types.ObjectId, ref: 'Mandal', required: true },
   mandal: { type: mongoose.Schema.Types.ObjectId, ref: 'Mandal', required: true },
   village: { type: mongoose.Schema.Types.ObjectId, ref: 'Village', required: true },
   hospitalName: { type: String, required: true },
@@ -37,7 +36,8 @@ const CMRF = mongoose.model('CMRF', cmrfSchema);
 const jobsSchema = new mongoose.Schema({
   referencePersonName: { type: String, required: true },
   referencePhoneNumber: { type: String, required: true },
-  qualification: { type: String, required: true }
+  qualification: { type: String, required: true },
+  otherQualification: { type: String}
 });
 const JOBS = mongoose.model('JOBS', jobsSchema);
 
@@ -65,6 +65,7 @@ const Transfer = mongoose.model('Transfer', transferSchema);
 // Main Schema
 const letterRequestSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  relation: { type: String, enum: ['S/O', 'D/O', 'O/O'], required: true }, 
   gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
   fatherName: { type: String, required: true },
   age: { type: Number, required: true },
