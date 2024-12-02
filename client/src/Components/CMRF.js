@@ -106,7 +106,6 @@ const CMRF = ({
               as="select"
               value={mandalselectedDropdown}
               onChange={handleMandalChange}
-              disabled={mandalDisable}
             >
               <option value="">Select Mandal</option>
               {mandals.map((mandal) => (
@@ -127,7 +126,6 @@ const CMRF = ({
               as="select"
               value={villageselectedDropdown}
               onChange={handleVillageChange}
-              disabled={villageDisable}
             >
               <option value="">Select Village</option>
               {villages.map((village) => (

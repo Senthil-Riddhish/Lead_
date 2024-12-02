@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 
-const JOBS = ({ formData = { jobs: { referencePersonName: '', referencePhoneNumber: '', qualification: '', otherQualification: '' } }, onChange }) => {
+const JOBS = ({ 
+  formData = { jobs: { referencePersonName: '', referencePhoneNumber: '', qualification: '', otherQualification: '' } }, 
+  onChange 
+}) => {
   const [showOtherInput, setShowOtherInput] = useState(false);
+
+  // Ensure `formData.jobs` is always initialized
+  const jobsData = formData.jobs || { 
+    referencePersonName: '', 
+    referencePhoneNumber: '', 
+    qualification: '', 
+    otherQualification: '' 
+  };
 
   const handleQualificationChange = (e) => {
     const selectedQualification = e.target.value;
@@ -10,16 +21,13 @@ const JOBS = ({ formData = { jobs: { referencePersonName: '', referencePhoneNumb
     onChange({
       ...formData,
       jobs: {
-        ...formData.jobs,
+        ...jobsData, // Use `jobsData` to ensure default values are handled
         qualification: selectedQualification,
-        otherQualification: selectedQualification === 'Others' ? formData.jobs.otherQualification : '' // Clear otherQualification if not 'Others'
+        otherQualification: selectedQualification === 'Others' ? jobsData.otherQualification : '' // Clear otherQualification if not 'Others'
       }
     });
   };
 
-  // Ensure formData.jobs is initialized with default values if not provided
-  const jobsData = formData.jobs || { referencePersonName: '', referencePhoneNumber: '', qualification: '', otherQualification: '' };
-  console.log("jobsData : ",jobsData);
   return (
     <Form>
       {/* Reference Details */}
@@ -81,7 +89,7 @@ const JOBS = ({ formData = { jobs: { referencePersonName: '', referencePhoneNumb
           ))}
 
           {/* Show other qualification input if "Others" is selected */}
-          {(showOtherInput || (formData.jobs.qualification==='Others')) && (
+          {(showOtherInput || jobsData.qualification === 'Others') && (
             <Form.Group controlId="otherQualification" className="mt-2">
               <Form.Label>Other Qualification</Form.Label>
               <Form.Control

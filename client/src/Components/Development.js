@@ -3,7 +3,7 @@ import { Form, Row, Col } from 'react-bootstrap';
 
 const Development = ({
     formData = {
-        DEVELOPMENT: {
+        development: {
             ac: '',
             mandal: '',
             village: '',
@@ -15,56 +15,62 @@ const Development = ({
     onChange,
     userRole,
     acData,
-    assignedAc
+    assignedAc,
+    grievanceId=''
 }) => {
-    const [selectedAc, setSelectedAc] = useState(userRole === 0 ? '' : assignedAc);
     const [mandals, setMandals] = useState([]);
     const [villages, setVillages] = useState([]);
+    const [mandalselectedDropdown, setmandalselectedDropdown] = useState('');
+    const [villageselectedDropdown, setvillageselectedDropdown] = useState('');
 
     useEffect(() => {
-        if (userRole === 1 && assignedAc) {
-            const selectedAcMandals = acData[assignedAc]?.mandals || {};
-            setMandals(Object.entries(selectedAcMandals).map(([mandalId, mandalInfo]) => ({
-                id: mandalId,
-                name: mandalInfo.name,
-                villages: mandalInfo.village || []
-            })));
-        }
-    }, [assignedAc, acData, userRole]);
-
-    const handleAcChange = (event) => {
-        const acId = event.target.value;
-        setSelectedAc(acId);
-
-        const selectedAcMandals = acData[acId]?.mandals || {};
-        setMandals(Object.entries(selectedAcMandals).map(([mandalId, mandalInfo]) => ({
+        if (assignedAc) {
+          console.log(acData);
+          const selectedAcMandals = acData[assignedAc]?.mandals || {};
+          setMandals(Object.entries(selectedAcMandals).map(([mandalId, mandalInfo]) => ({
             id: mandalId,
             name: mandalInfo.name,
             villages: mandalInfo.village || []
-        })));
-
-        onChange({
-            ...formData,
-            DEVELOPMENT: {
-                ...formData.DEVELOPMENT,
-                ac: acId,
-                mandal: '',
-                village: ''
+          })));
+          console.log(mandals);
+          if (("cmrf" in formData) && ("mandal" in formData.cmrf)) {
+            const filteredVillage = mandals.filter(ind => ind.id==formData.cmrf.mandal);
+            console.log(filteredVillage, formData.cmrf.mandal);
+            if (filteredVillage.length > 0) {
+              setVillages(filteredVillage[0].villages);
+              console.log(villages.some((element) => element._id == formData.cmrf.village),villages);
+              if ((filteredVillage[0].villages).some((element) => element._id == formData.cmrf.village)) {
+                console.log("true")
+                console.log(formData.cmrf.mandal);
+                setmandalselectedDropdown(formData.cmrf.mandal)
+                setvillageselectedDropdown(formData.cmrf.village)
+              }
+            } else {
+              setvillageselectedDropdown('');
+              setmandalselectedDropdown('');
             }
-        });
-        setVillages([]); // Reset villages when AC changes
-    };
+          } else {
+            setvillageselectedDropdown('');
+            setmandalselectedDropdown('');
+          }
+        } else {
+          setvillageselectedDropdown('');
+          setmandalselectedDropdown('');
+        }
+      }, [assignedAc, acData, userRole]);
 
     const handleMandalChange = (event) => {
         const mandalId = event.target.value;
-
-        const selectedMandal = mandals.find(m => m.id === mandalId);
-        setVillages(selectedMandal ? selectedMandal.villages : []); // Set villages if mandal is found
-
+        const selectedMandal = mandals.find((m) => m.id === mandalId);
+        const updatedVillages = selectedMandal ? selectedMandal.villages : [];
+        setVillages(updatedVillages); // Update villages state
+        setmandalselectedDropdown(mandalId);
+        setvillageselectedDropdown('');
+        // Call the parent's onChange function with updated data
         onChange({
             ...formData,
-            DEVELOPMENT: {
-                ...formData.DEVELOPMENT,
+            development: {
+                ...formData.development,
                 mandal: mandalId,
                 village: ''
             }
@@ -73,11 +79,11 @@ const Development = ({
 
     const handleVillageChange = (event) => {
         const villageId = event.target.value;
-
+        setvillageselectedDropdown(villageId)
         onChange({
             ...formData,
-            DEVELOPMENT: {
-                ...formData.DEVELOPMENT,
+            development: {
+                ...formData.development,
                 village: villageId
             }
         });
@@ -85,11 +91,10 @@ const Development = ({
 
     const handleAuthorityChange = (event) => {
         const authority = event.target.value;
-
         onChange({
             ...formData,
-            DEVELOPMENT: {
-                ...formData.DEVELOPMENT,
+            development: {
+                ...formData.development,
                 authority
             }
         });
@@ -97,11 +102,10 @@ const Development = ({
 
     const handleIssueChange = (event) => {
         const issue = event.target.value;
-
         onChange({
             ...formData,
-            DEVELOPMENT: {
-                ...formData.DEVELOPMENT,
+            development: {
+                ...formData.development,
                 issue
             }
         });
@@ -109,11 +113,10 @@ const Development = ({
 
     const handleLetterIssueChange = (event) => {
         const letterIssue = event.target.value === "yes";
-
         onChange({
             ...formData,
-            DEVELOPMENT: {
-                ...formData.DEVELOPMENT,
+            development: {
+                ...formData.development,
                 letterIssue
             }
         });
@@ -122,32 +125,14 @@ const Development = ({
     return (
         <Form>
             <Row className="mb-3">
-                {userRole === 0 && (
-                    <Col md={12}>
-                        <Form.Group controlId="ac-select">
-                            <Form.Label>Select AC</Form.Label>
-                            <Form.Control as="select" value={formData.DEVELOPMENT?.ac || ''} onChange={handleAcChange}>
-                                <option value="">Select AC</option>
-                                {Object.entries(acData).map(([acId, acInfo]) => (
-                                    <option key={acId} value={acId}>
-                                        {acInfo.name}
-                                    </option>
-                                ))}
-                            </Form.Control>
-                        </Form.Group>
-                    </Col>
-                )}
-            </Row>
-
-            <Row className="mb-3">
                 <Col md={12}>
                     <Form.Group controlId="mandal-select">
                         <Form.Label>Select Mandal</Form.Label>
                         <Form.Control
                             as="select"
-                            value={formData.DEVELOPMENT?.mandal || ''}
+                            value={formData.development?.mandal || ''}
                             onChange={handleMandalChange}
-                            disabled={!selectedAc && userRole === 0}
+                            disabled={!assignedAc}
                         >
                             <option value="">Select Mandal</option>
                             {mandals.map((mandal) => (
@@ -166,9 +151,9 @@ const Development = ({
                         <Form.Label>Select Village</Form.Label>
                         <Form.Control
                             as="select"
-                            value={formData.DEVELOPMENT?.village || ''}
+                            value={formData.development?.village || ''}
                             onChange={handleVillageChange}
-                            disabled={!formData.DEVELOPMENT?.mandal}
+                            disabled={!formData.development?.mandal}
                         >
                             <option value="">Select Village</option>
                             {villages.map((village) => (
@@ -188,7 +173,7 @@ const Development = ({
                         <Form.Control
                             type="text"
                             placeholder="Authority"
-                            value={formData.DEVELOPMENT?.authority || ''}
+                            value={formData.development?.authority || ''}
                             onChange={handleAuthorityChange}
                         />
                     </Form.Group>
@@ -202,7 +187,7 @@ const Development = ({
                         <Form.Control
                             type="text"
                             placeholder="Issue"
-                            value={formData.DEVELOPMENT?.issue || ''}
+                            value={formData.development?.issue || ''}
                             onChange={handleIssueChange}
                         />
                     </Form.Group>
@@ -213,7 +198,7 @@ const Development = ({
                 <Col md={12}>
                     <Form.Group controlId="letter-issue">
                         <Form.Label>Letter Issue</Form.Label>
-                        <Form.Control as="select" value={formData.DEVELOPMENT?.letterIssue ? "yes" : "no"} onChange={handleLetterIssueChange}>
+                        <Form.Control as="select" value={formData.development?.letterIssue ? "yes" : "no"} onChange={handleLetterIssueChange}>
                             <option value="yes">Yes</option>
                             <option value="no">No</option>
                         </Form.Control>

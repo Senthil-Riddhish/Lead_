@@ -87,11 +87,9 @@ const LetterRequestForm = () => {
       setFormData(letterRequestData);
       if (letterRequestData.acId) {
         setSelectedAc(letterRequestData.acId);
-        setSelectedMandal(letterRequestData.mandalId);
-        setSelectedVillage(letterRequestData.villageId);
-        console.log(selectedMandal);
         if (letterRequestData.mandalId) setSelectedMandal(letterRequestData.mandalId);
         if (letterRequestData.villageId) setSelectedVillage(letterRequestData.villageId);
+        console.log(selectedMandal, selectedVillage);
       }
       if (letterRequestData.grievanceRef) {
         setSelectedCategory('GrievanceRef');
@@ -101,6 +99,8 @@ const LetterRequestForm = () => {
         setInnerSelectedVillage(letterRequestData.cmrf.village);
       }  else if (letterRequestData.jobs) {
         setSelectedCategory('JOBS')
+      } else if (letterRequestData.development) {
+        setSelectedCategory('DEVELOPMENT')
       }
       else if (letterRequestData.others) {
         setSelectedCategory('Others');
