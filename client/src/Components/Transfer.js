@@ -1,58 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 
-const Transfer = ({ formData = { Transfer: {} }, onChange }) => {
-    const [selectedOption, setSelectedOption] = useState(formData.Transfer?.option || '');
-    
-    // UseEffect to update form data only when the option changes
-    useEffect(() => {
-        // Prevent unnecessary updates if selectedOption hasn't changed
-        if (formData.Transfer?.transferType !== selectedOption) {
-            if (selectedOption === 'retention') {
-                onChange({
-                    ...formData,
-                    Transfer: {
-                        transferType: 'retention',
-                        retentionStartedAt: formData.Transfer?.retentionStartedAt || '', // Retain relevant field
-                    }
-                });
-            } else if (selectedOption === 'transfer') {
-                onChange({
-                    ...formData,
-                    Transfer: {
-                        transferType: 'transfer',
-                        fromVillage: formData.Transfer?.fromVillage || '',
-                        toVillage: formData.Transfer?.toVillage || '',
-                    }
-                });
-            } else if (selectedOption === 'recommendation' || selectedOption === 'new_post_recommendation') {
-                onChange({
-                    ...formData,
-                    Transfer: {
-                        transferType: selectedOption,
-                        recommendationLocation: formData.Transfer?.recommendationLocation || '',
-                        recommendationPosition: formData.Transfer?.recommendationPosition || '',
-                    }
-                });
-            }
-        }
-    }, [selectedOption, formData, onChange]);  // Depend on selectedOption to prevent infinite loops
+// Utility function to format date as YYYY-MM-DD
+const formatDate = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 
-    // Handle radio button change
+const Transfer = ({ formData = { transfer: {} }, onChange }) => {
+    const [selectedOption, setSelectedOption] = useState(formData.transfer?.transferType || '');
+
+    useEffect(() => {
+        const currentTransferType = formData.transfer?.transferType || '';
+        if (selectedOption !== currentTransferType) {
+            let updatedTransfer = { transferType: selectedOption };
+
+            if (selectedOption === 'retention') {
+                updatedTransfer.retentionStartedAt = formatDate(formData.transfer?.retentionStartedAt);
+            } else if (selectedOption === 'transfer') {
+                updatedTransfer.fromVillage = formData.transfer?.fromVillage || '';
+                updatedTransfer.toVillage = formData.transfer?.toVillage || '';
+            } else if (selectedOption === 'recommendation' || selectedOption === 'new_post_recommendation') {
+                updatedTransfer.recommendationLocation = formData.transfer?.recommendationLocation || '';
+                updatedTransfer.recommendationPosition = formData.transfer?.recommendationPosition || '';
+            }
+
+            onChange({
+                ...formData,
+                transfer: updatedTransfer,
+            });
+        }
+    }, [selectedOption]); // Only re-run when selectedOption changes
+
     const handleOptionChange = (event) => {
-        const { value } = event.target;
-        setSelectedOption(value);
+        setSelectedOption(event.target.value);
     };
 
-    // Handle input change for text fields
     const handleInputChange = (event) => {
         const { name, value } = event.target;
+        let updatedValue = value;
+
+        if (name === 'retentionStartedAt') {
+            updatedValue = formatDate(value); // Format the date
+        }
+
         onChange({
             ...formData,
-            Transfer: {
-                ...formData.Transfer,
-                [name]: value
-            }
+            transfer: {
+                ...formData.transfer,
+                [name]: updatedValue,
+            },
         });
     };
 
@@ -98,35 +99,35 @@ const Transfer = ({ formData = { Transfer: {} }, onChange }) => {
                 </Col>
             </Row>
 
-            {/* Conditional Fields based on selected option */}
+            {/* Conditional Fields */}
             {selectedOption === 'transfer' && (
-    <Row className="mb-3">
-        <Col md={6}>
-            <Form.Group controlId="fromVillage">
-                <Form.Label>From</Form.Label>
-                <Form.Control
-                    type="text"
-                    placeholder="From"
-                    name="fromVillage" // Use the key 'fromVillage' to match the formData structure
-                    value={formData.Transfer?.fromVillage || ''}
-                    onChange={handleInputChange}
-                />
-            </Form.Group>
-        </Col>
-        <Col md={6}>
-            <Form.Group controlId="toVillage">
-                <Form.Label>To</Form.Label>
-                <Form.Control
-                    type="text"
-                    placeholder="To"
-                    name="toVillage" // Use the key 'toVillage' to match the formData structure
-                    value={formData.Transfer?.toVillage || ''}
-                    onChange={handleInputChange}
-                />
-            </Form.Group>
-        </Col>
-    </Row>
-)}
+                <Row className="mb-3">
+                    <Col md={6}>
+                        <Form.Group controlId="fromVillage">
+                            <Form.Label>From</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="From"
+                                name="fromVillage"
+                                value={formData.transfer?.fromVillage || ''}
+                                onChange={handleInputChange}
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                        <Form.Group controlId="toVillage">
+                            <Form.Label>To</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="To"
+                                name="toVillage"
+                                value={formData.transfer?.toVillage || ''}
+                                onChange={handleInputChange}
+                            />
+                        </Form.Group>
+                    </Col>
+                </Row>
+            )}
 
             {selectedOption === 'retention' && (
                 <Row className="mb-3">
@@ -136,7 +137,7 @@ const Transfer = ({ formData = { Transfer: {} }, onChange }) => {
                             <Form.Control
                                 type="date"
                                 name="retentionStartedAt"
-                                value={formData.Transfer?.retentionStartedAt || ''}
+                                value={formatDate(formData.transfer?.retentionStartedAt) || ''}
                                 onChange={handleInputChange}
                             />
                         </Form.Group>
@@ -145,34 +146,32 @@ const Transfer = ({ formData = { Transfer: {} }, onChange }) => {
             )}
 
             {(selectedOption === 'recommendation' || selectedOption === 'new_post_recommendation') && (
-                <>
-                    <Row className="mb-3">
-                        <Col md={6}>
-                            <Form.Group controlId="at">
-                                <Form.Label>At</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="At"
-                                    name="recommendationLocation"
-                                    value={formData.Transfer?.recommendationLocation || ''}
-                                    onChange={handleInputChange}
-                                />
-                            </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                            <Form.Group controlId="positionDesignation">
-                                <Form.Label>Position Designation</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Position Designation"
-                                    name="recommendationPosition"
-                                    value={formData.Transfer?.recommendationPosition || ''}
-                                    onChange={handleInputChange}
-                                />
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                </>
+                <Row className="mb-3">
+                    <Col md={6}>
+                        <Form.Group controlId="recommendationLocation">
+                            <Form.Label>At</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="At"
+                                name="recommendationLocation"
+                                value={formData.transfer?.recommendationLocation || ''}
+                                onChange={handleInputChange}
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                        <Form.Group controlId="recommendationPosition">
+                            <Form.Label>Position Designation</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Position Designation"
+                                name="recommendationPosition"
+                                value={formData.transfer?.recommendationPosition || ''}
+                                onChange={handleInputChange}
+                            />
+                        </Form.Group>
+                    </Col>
+                </Row>
             )}
         </Form>
     );

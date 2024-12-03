@@ -16,8 +16,13 @@ const CMRF = ({
 
   useEffect(() => {
     if (assignedAc) {
-      console.log(acData);
+      console.log("acData : ",acData, formData);
       const selectedAcMandals = acData[assignedAc]?.mandals || {};
+      let filteredMandals = Object.entries(selectedAcMandals).map(([mandalId, mandalInfo]) => ({
+        id: mandalId,
+        name: mandalInfo.name,
+        villages: mandalInfo.village || []
+      }))
       setMandals(Object.entries(selectedAcMandals).map(([mandalId, mandalInfo]) => ({
         id: mandalId,
         name: mandalInfo.name,

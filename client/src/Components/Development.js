@@ -33,17 +33,17 @@ const Development = ({
             villages: mandalInfo.village || []
           })));
           console.log(mandals);
-          if (("cmrf" in formData) && ("mandal" in formData.cmrf)) {
-            const filteredVillage = mandals.filter(ind => ind.id==formData.cmrf.mandal);
-            console.log(filteredVillage, formData.cmrf.mandal);
+          if (("development" in formData) && ("mandal" in formData.development)) {
+            const filteredVillage = mandals.filter(ind => ind.id==formData.development.mandal);
+            console.log(filteredVillage, formData.development.mandal);
             if (filteredVillage.length > 0) {
               setVillages(filteredVillage[0].villages);
-              console.log(villages.some((element) => element._id == formData.cmrf.village),villages);
-              if ((filteredVillage[0].villages).some((element) => element._id == formData.cmrf.village)) {
+              console.log(villages.some((element) => element._id ==formData.development.village),villages);
+              if ((filteredVillage[0].villages).some((element) => element._id == formData.development.village)) {
                 console.log("true")
-                console.log(formData.cmrf.mandal);
-                setmandalselectedDropdown(formData.cmrf.mandal)
-                setvillageselectedDropdown(formData.cmrf.village)
+                console.log(formData.development.mandal);
+                setmandalselectedDropdown(formData.development.mandal)
+                setvillageselectedDropdown(formData.development.village)
               }
             } else {
               setvillageselectedDropdown('');
