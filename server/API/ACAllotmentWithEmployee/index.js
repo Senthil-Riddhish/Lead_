@@ -1,5 +1,5 @@
 const express = require('express');
-import {Allotment, EmployeeModel, AC} from '../../Database/allModels'; // Import Allotment model
+import {Allotment, EmployeeModel, AC, LetterRequest, EmployeeGrievancesTrack, AssignedwithTrackingDocument} from '../../Database/allModels'; // Import Allotment model
 const router = express.Router();
 
 // Add new allotment route
@@ -129,6 +129,46 @@ router.get('/allotment/:employeeId', async (req, res) => {
   }
 });
 
+router.delete('/delete-ac/:acId', async (req, res) => {
+  const { acId } = req.params;
+
+  try {
+    // 1. Delete the Assembly Constituency (AC) document
+    const deleteAC = await AC.findByIdAndDelete(acId);
+    if (!deleteAC) {
+      return res.status(404).json({ message: 'AC not found' });
+    }
+
+    // 2. Delete related allotments
+    const allotment = await Allotment.findOneAndDelete({ ac: acId });
+    if (allotment) {
+      const employeeId = allotment.employee;
+
+      // 3. Delete documents in EmployeeGrievancesTrack for the allocated employee
+      await EmployeeGrievancesTrack.findOneAndDelete({ employeeId });
+    }
+
+    // 4. Fetch and delete grievances related to this AC
+    const grievances = await LetterRequest.find({ ac: acId });
+    for (const grievance of grievances) {
+      const grievanceId = grievance._id;
+
+      // Delete the grievance document
+      await LetterRequest.findByIdAndDelete(grievanceId);
+
+      // Delete related tracking documents from AssignedwithTrackingDocument
+      await AssignedwithTrackingDocument.findOneAndDelete({
+        referenceGrievanceDocument: grievanceId,
+      });
+    }
+
+    // Respond with success
+    res.status(200).json({ message: 'AC and related data successfully deleted' });
+  } catch (error) {
+    console.error('Error while deleting AC and related data:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 module.exports = router;
   

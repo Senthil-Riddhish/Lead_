@@ -5,6 +5,7 @@ import AC from './AssemblyConstituency'; // Note: Default import
 import {LetterRequest,Others, GrievanceRef} from './grievanceRefSchema';
 import EmployeeGrievancesTrack from './EmployeeGrievancesTrack';
 import AssignedwithTrackingDocument from "./AssignedIdwithTrackingDocument";
+import DailyCount from "./DailyCount";
 export {
     UserModel,
     AC,
@@ -12,5 +13,6 @@ export {
     Allotment,
     LetterRequest,Others,GrievanceRef,
     EmployeeGrievancesTrack,
-    AssignedwithTrackingDocument
+    AssignedwithTrackingDocument,
+    DailyCount
 };

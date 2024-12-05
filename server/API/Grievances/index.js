@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import {LetterRequest, EmployeeGrievancesTrack,AssignedwithTrackingDocument} from  "../../Database/allModels" // Assuming the model is saved here
+import { LetterRequest, EmployeeGrievancesTrack, AssignedwithTrackingDocument } from "../../Database/allModels" // Assuming the model is saved here
 const router = express.Router();
 /**
  * Route to add a new request
@@ -66,7 +66,7 @@ router.post('/:employeeId/:category/:role', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   console.log("put request");
-  
+
   try {
     // Fetch the existing LetterRequest document
     const alreadyStoredDocument = await LetterRequest.findById(id);
@@ -74,7 +74,7 @@ router.put('/:id', async (req, res) => {
     if (!alreadyStoredDocument) {
       return res.status(404).json({ message: "Document not Found" });
     }
-855
+    855
     // Check if `acId` has changed
     if (alreadyStoredDocument.acId != req.body.acId) {
       // Find the AssignedwithTrackingDocument associated with this LetterRequest
@@ -116,29 +116,36 @@ router.put('/:id', async (req, res) => {
         const grievanceTracking = await EmployeeGrievancesTrack.findById(
           assignedTrackingDoc.referenceTrackingDocument
         );
-      if (grievanceTracking) {
-        console.log("grievanceTracking : ",grievanceTracking);
-        
-        // Remove the `id` from the old category array
-        const oldCategoryArray =
-          grievanceTracking.grievanceCategories[alreadyStoredDocument.category] || [];
-          console.log("oldCategoryArray : ",oldCategoryArray);
-        grievanceTracking.grievanceCategories[alreadyStoredDocument.category] = oldCategoryArray.filter(
-          (docId) => docId.toString() !== id
-        );
+        if (grievanceTracking) {
+          console.log("grievanceTracking : ", grievanceTracking);
 
-        // Add the `id` to the new category array
-        if (!grievanceTracking.grievanceCategories[req.body.category]) {
-          grievanceTracking.grievanceCategories[req.body.category] = [];
+          // Remove the `id` from the old category array
+          const oldCategoryArray =
+            grievanceTracking.grievanceCategories[alreadyStoredDocument.category] || [];
+          console.log("oldCategoryArray : ", oldCategoryArray);
+          grievanceTracking.grievanceCategories[alreadyStoredDocument.category] = oldCategoryArray.filter(
+            (docId) => docId.toString() !== id
+          );
+
+          // Add the `id` to the new category array
+          if (!grievanceTracking.grievanceCategories[req.body.category]) {
+            grievanceTracking.grievanceCategories[req.body.category] = [];
+          }
+          grievanceTracking.grievanceCategories[req.body.category].push(id);
+
+          // Save the updated grievance tracking document
+          await grievanceTracking.save();
         }
-        grievanceTracking.grievanceCategories[req.body.category].push(id);
-
-        // Save the updated grievance tracking document
-        await grievanceTracking.save();
       }
     }
-    }
+    const [, , count] = req.body.token.split('/'); // Extract count from the token
+    // Generate the current date in the format YYYY-MM-DD
+    const currentDate = new Date();
+    const formattedDate = currentDate.toISOString().split('T')[0];
 
+    // Generate the updated token with the new category and current date
+    const updatedToken = `${req.body.category}/${formattedDate}/${count}`;
+    req.body.token = updatedToken;
     // Replace the old document with the new data
     await LetterRequest.replaceOne({ _id: id }, req.body);
 
@@ -186,8 +193,8 @@ router.get('/getdocuments/:employeeId/:role', async (req, res) => {
     } else {
       // Default functionality for other roles
       const employeeGrievances1 = await EmployeeGrievancesTrack.findOne({ employeeId })
-      console.log( employeeGrievances1);
-      
+      console.log(employeeGrievances1);
+
       const employeeGrievances = await EmployeeGrievancesTrack.findOne({ employeeId })
         .populate('grievanceCategories.GrievanceRef')
         .populate('grievanceCategories.CMRF')

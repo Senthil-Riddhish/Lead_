@@ -73,6 +73,7 @@ const GrievanceTable = () => {
     return grievanceCategory.map((grievance, index) => (
       <tr key={index}>
         <td>{grievance.category}</td>
+        <td>{grievance.token}</td>
         <td>{grievance.name}</td>
         <td>{grievance.age}</td>
         <td>{grievance.fatherName}</td>
@@ -101,6 +102,7 @@ const GrievanceTable = () => {
                 <thead>
                   <tr>
                     <th>Category</th>
+                    <th>Token</th>
                     <th>Name</th>
                     <th>Age</th>
                     <th>Father Name</th>

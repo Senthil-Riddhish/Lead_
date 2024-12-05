@@ -83,6 +83,10 @@ const AddAC = () => {
     setShowModal(true);
   };
 
+  const openDeleteAC = (ac) => {
+    console.log(ac);
+  }
+
   const handleUpdateAC = async () => {
     setLoading(true);
     try {
@@ -212,6 +216,11 @@ const AddAC = () => {
                 <td>
                   <Button variant="warning" onClick={() => openEditModal(ac)}>
                     Update
+                  </Button>
+                </td>
+                <td>
+                  <Button variant="warning" onClick={() => openDeleteAC(ac)}>
+                    Delete
                   </Button>
                 </td>
               </tr>

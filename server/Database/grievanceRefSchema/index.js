@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+import DailyCount from '../DailyCount';
 // Sub-schema for GrievanceRef and Others (Categories 1 & 6)
 const grievanceRefSchema = new mongoose.Schema({
   subject: { type: String, required: true },
@@ -98,16 +98,38 @@ const letterRequestSchema = new mongoose.Schema({
   villageId:{ type: String},
   
   // Token for tracking
-  token: { type: String, default: () => generateToken(), unique: true }
+  token: { type: String, unique: true }
 
 }, { timestamps: true });
 
-// Function to generate token (as in previous example)
-const generateToken = () => {
-  return Math.random().toString(36).substr(2) + Date.now().toString(36);
-};
+// Pre-save middleware for updating daily count and assigning token
+letterRequestSchema.pre('save', async function (next) {
+  try {
+    const currentDate = new Date();
+    const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0)); // Get start of the day
+
+    // Update the daily count for the current day or create a new one
+    const dailyCountDoc = await DailyCount.findOneAndUpdate(
+      { date: startOfDay },
+      { $inc: { count: 1 } }, // Increment count
+      { new: true, upsert: true, setDefaultsOnInsert: true } // Create document if it doesn't exist
+    );
+
+    // Use the updated count to generate the token
+    const countForDay = dailyCountDoc.count; // Get the updated count
+    const formattedDate = startOfDay.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+
+    // Assign the token based on the formatted date and count
+    this.token = `${this.category}/${formattedDate}/${countForDay}`;
+    console.log(this.token);
+    next(); // Proceed with saving the document
+  } catch (error) {
+    console.error('Error in pre-save middleware:', error);
+    next(error); // Pass the error to the next middleware
+  }
+});
 
 // Create the model
 const LetterRequest = mongoose.model('LetterRequest', letterRequestSchema);
 
-export { LetterRequest, Others, GrievanceRef};
+export { LetterRequest};

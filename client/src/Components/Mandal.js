@@ -85,6 +85,9 @@ const Mandal = () => {
     setShowVillageModal(true);
   };
 
+  const deleteMandal = (mandal) => {
+    console.log(mandal, selectedAc);
+  }
   // Close Village Modal
   const closeVillageModal = () => {
     setShowVillageModal(false);
@@ -155,7 +158,8 @@ const Mandal = () => {
                 <td>{mandal.name}</td>
                 <td>
                   <Button className='me-2' variant="outline-secondary" onClick={() => openUpdateModal(mandal)}>Update Mandal</Button>
-                  <Button variant="outline-secondary" onClick={() => openVillageModal(mandal)}>Village</Button>
+                  <Button className='me-2' variant="outline-secondary" onClick={() => openVillageModal(mandal)}>Village</Button>
+                  <Button variant="outline-secondary" onClick={() => deleteMandal(mandal)}>Delete Mandal</Button>
                 </td>
               </tr>
             ))}
