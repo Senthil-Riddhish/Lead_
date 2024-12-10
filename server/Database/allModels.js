@@ -11,7 +11,7 @@ export {
     AC,
     EmployeeModel,
     Allotment,
-    LetterRequest,Others,GrievanceRef,
+    LetterRequest,
     EmployeeGrievancesTrack,
     AssignedwithTrackingDocument,
     DailyCount

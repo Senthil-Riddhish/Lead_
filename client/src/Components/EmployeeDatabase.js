@@ -41,6 +41,35 @@ const EmployeeDatabase = () => {
     });
   };
 
+  const deleteEmployee = async (employee, setEmployees, employees) => {
+    try {
+      const response = await axios.delete(`http://localhost:8000/employee/delete-employee/${employee._id}`);
+      if (response.status === 200) {
+        console.log(response.data.message);
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Employee deleted successfully",
+          showConfirmButton: false,
+          timer: 1500
+        });
+
+        // Remove the deleted employee from the employees array
+        const updatedEmployees = employees.filter(emp => emp._id !== employee._id);
+        setEmployees(updatedEmployees); // Update the state or variable holding the employee list
+      }
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: error.response?.data?.message || "Error deleting employee",
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }
+  };
+
   const handleChangeUpdate = (e) => {
     const { name, value } = e.target;
 
@@ -113,7 +142,8 @@ const EmployeeDatabase = () => {
               <td>{employee._id}</td>
               <td>{employee.name}</td>
               <td>
-                <Button variant="warning" onClick={() => handleUpdateClick(employee)}>Update</Button>
+                <Button className='m-1' variant="warning" onClick={() => handleUpdateClick(employee)}>Update</Button>
+                <Button variant="warning" onClick={() => deleteEmployee(employee)}>Delete</Button>
               </td>
             </tr>
           ))}

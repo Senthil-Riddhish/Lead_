@@ -8,15 +8,15 @@ import { IoPersonAddSharp } from "react-icons/io5";
 import { IoIosContact } from "react-icons/io";
 
 function errorMessage(statusCode, error) {
-    console.log(statusCode, error);
-    
-    switch (statusCode) {
-        case 400:
-            return error.response.data.message
-        case 404:
-            return "The server is unable to find the requested page or resource"
-    }
- }
+  console.log(statusCode, error);
+
+  switch (statusCode) {
+    case 400:
+      return error.response.data.message
+    case 404:
+      return "The server is unable to find the requested page or resource"
+  }
+}
 
 const AddAC = () => {
   const [acs, setAcs] = useState([]);
@@ -54,7 +54,7 @@ const AddAC = () => {
       const response = await axios.post('http://localhost:8000/ac/add-ac', newAC);
       // Append the new AC data to the existing `acs` state
       setAcs((prevAcs) => [...prevAcs, response.data.data]);
-  
+
       // Reset the form fields
       setNewAC({ name: '', parliamentaryConstituency: '', PCId: '', pocMobileNumber: '' });
       Swal.fire({
@@ -65,7 +65,7 @@ const AddAC = () => {
         timer: 1500
       });
     } catch (error) {
-      var msg = errorMessage(error.status,error);
+      var msg = errorMessage(error.status, error);
       Swal.fire({
         position: "top-end",
         icon: "error",
@@ -83,34 +83,57 @@ const AddAC = () => {
     setShowModal(true);
   };
 
-  const openDeleteAC = (ac) => {
-    console.log(ac);
+  const openDeleteAC = async(ac) => {
+    try {
+      // Log the current AC and state for debugging
+      console.log("AC to delete:", ac);
+      console.log("Current ACs:", acs);
+
+      // Send a DELETE request to the server
+      const response = await axios.delete(`http://localhost:8000/allotment/delete-ac/${ac._id}`);
+
+      // If the deletion is successful
+      if (response.status === 200) {
+        console.log("Deletion successful:", response.data);
+
+        // Filter out the deleted AC from the acs array
+        const updatedACs = acs.filter((item) => item._id !== ac._id);
+
+        // Update the state with the new AC array
+        setAcs(updatedACs);
+        console.log("Updated ACs:", updatedACs);
+      } else {
+        console.error("Failed to delete AC. Status:", response.status);
+      }
+    } catch (error) {
+      console.error("Error while deleting AC:", error);
+    }
   }
 
   const handleUpdateAC = async () => {
     setLoading(true);
     try {
-      const response = await axios.put(`http://localhost:8000/ac/edit-ac/${currentAC._id}`,{
+      const response = await axios.put(`http://localhost:8000/ac/edit-ac/${currentAC._id}`, {
         "name": currentAC.name,
         "parliamentaryConstituency": currentAC.parliamentaryConstituency,
         "PCId": currentAC.PCId,
         "pocMobileNumber": currentAC.pocMobileNumber
       });
-      
+
       // Find the index of the updated AC in the existing `acs` array
       const updatedACIndex = acs.findIndex(ac => ac._id === currentAC._id);
-  
+
       // Create a new array to hold the updated records
       const updatedACs = [...acs];
-  
+
       // Replace the updated AC record with the response data
       if (updatedACIndex !== -1) {
         updatedACs[updatedACIndex] = response.data.data;
       }
-  
+
       // Update the state with the new array
       setAcs(updatedACs);
-  
+
       // Close the modal
       setShowModal(false);
     } catch (error) {
@@ -118,7 +141,7 @@ const AddAC = () => {
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
   const handleInputChange = (e) => {
     setNewAC({ ...newAC, [e.target.name]: e.target.value });
@@ -135,7 +158,7 @@ const AddAC = () => {
         <Row className="mb-3">
           <Col md={6}>
             <Form.Group>
-              <Form.Label><MdDriveFileRenameOutline className='me-1'/>Name</Form.Label>
+              <Form.Label><MdDriveFileRenameOutline className='me-1' />Name</Form.Label>
               <Form.Control
                 type="text"
                 name="name"
@@ -147,7 +170,7 @@ const AddAC = () => {
           </Col>
           <Col md={6}>
             <Form.Group>
-              <Form.Label><RiGovernmentLine className='me-1'/>Parliamentary Constituency</Form.Label>
+              <Form.Label><RiGovernmentLine className='me-1' />Parliamentary Constituency</Form.Label>
               <Form.Control
                 type="text"
                 name="parliamentaryConstituency"
@@ -161,7 +184,7 @@ const AddAC = () => {
         <Row className="mb-3">
           <Col md={6}>
             <Form.Group>
-              <Form.Label><IoPersonAddSharp className='me-1'/>PC ID</Form.Label>
+              <Form.Label><IoPersonAddSharp className='me-1' />PC ID</Form.Label>
               <Form.Control
                 type="text"
                 name="PCId"
@@ -173,7 +196,7 @@ const AddAC = () => {
           </Col>
           <Col md={6}>
             <Form.Group>
-              <Form.Label><IoIosContact className='me-1'/>POC Mobile Number</Form.Label>
+              <Form.Label><IoIosContact className='me-1' />POC Mobile Number</Form.Label>
               <Form.Control
                 type="text"
                 name="pocMobileNumber"
@@ -204,6 +227,7 @@ const AddAC = () => {
               <th>PC ID</th>
               <th>POC Mobile Number</th>
               <th>Actions</th>
+              <th>Delete</th>
             </tr>
           </thead>
           <tbody>

@@ -49,6 +49,24 @@ const CreateEmployee = () => {
         showConfirmButton: false,
         timer: 1500
       });
+      setFormData({
+        name: '',
+        age: '',
+        fatherName: '',
+        address: '',
+        email: '',
+        phoneNumber: '',
+        panId: '',
+        aadharId: '',
+        scores: {
+          xth: '',
+          xiith: '',
+          bachelors: '',
+          masters: '',
+        },
+        epf: '',
+        password: ''
+      });
     } catch (error) {
       Swal.fire({
         position: "top-end",

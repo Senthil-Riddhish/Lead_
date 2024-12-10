@@ -7,6 +7,7 @@ import Jobs from '../Components/Jobs';
 import Development from '../Components/Development';
 import Transfer from '../Components/Transfer';
 import Others from '../Components/Others';
+import { validateForm } from './GrievancesValidation';
 import axios from 'axios';
 
 const LetterRequestForm = () => {
@@ -19,6 +20,7 @@ const LetterRequestForm = () => {
   const [selectedAc, setSelectedAc] = useState('');
   const [selectedMandal, setSelectedMandal] = useState('');
   const [selectedVillage, setSelectedVillage] = useState('');
+  const [isAcAllocated, setIsAcAllocated] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     gender: '',
@@ -42,6 +44,7 @@ const LetterRequestForm = () => {
     const initializePage = async () => {
       try {
         const token = sessionStorage.getItem('token');
+        console.log(token);
         if (!token) {
           navigate('/login');
         } else {
@@ -96,16 +99,24 @@ const LetterRequestForm = () => {
 
   const fetchEmployeeAcDetails = async (employeeId) => {
     try {
-      const { data } = await axios.get(`http://localhost:8000/allotment/allotment/${employeeId}`);
+      const { data } = await axios.get(`http://localhost:8000/allotment/employee-allotment/${employeeId}`);
       const allotedACId = data.allotedACId;
+
+      if (!allotedACId) {
+        setIsAcAllocated(false); // AC is not allocated
+        return;
+      }
+
       setFormData({
         ...formData,
-        acId: allotedACId
-      })
+        acId: allotedACId,
+      });
+
       const acDetails = await axios.get('http://localhost:8000/ac/getAll-ac');
       createAcMap(acDetails.data, allotedACId);
     } catch (error) {
       console.error('Error fetching AC details:', error);
+      setIsAcAllocated(false); // Handle the error as "AC not allocated"
     }
   };
 
@@ -197,6 +208,9 @@ const LetterRequestForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!validateForm(formData)) {
+      return
+    }
     console.log("before Form Data to Submit:", formData);
     // Determine whether to make a POST or PUT request
     const url = grievanceId
@@ -226,7 +240,7 @@ const LetterRequestForm = () => {
           letterRequired: false,
           to: '',
           purpose: '',
-          acId: '',
+          acId: tokenInfo.role ? selectedAc : '',
           mandalId: '',
           villageId: ''
         });
@@ -236,6 +250,11 @@ const LetterRequestForm = () => {
       .catch((error) => {
         console.error("Error submitting form:", error);
       });
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { checked } = e.target;
+    setFormData({ ...formData, letterRequired: checked, to: '', purpose: '' });
   };
 
   const renderCategoryForm = () => {
@@ -278,13 +297,13 @@ const LetterRequestForm = () => {
         delete updatedFormData['cmrf'];
         break;
       case 'JOBS':
-        delete updatedFormData['JOBS'];
+        delete updatedFormData['jobs'];
         break;
       case 'DEVELOPMENT':
-        delete updatedFormData['DEVELOPMENT'];
+        delete updatedFormData['development'];
         break;
       case 'Transfer':
-        delete updatedFormData['Transfer'];
+        delete updatedFormData['transfer'];
         break;
       case 'Others':
         delete updatedFormData['others'];
@@ -304,6 +323,12 @@ const LetterRequestForm = () => {
     return (
       <Container className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
         <Spinner animation="border" variant="primary" />
+      </Container>
+    );
+  } else if (!isAcAllocated) {
+    return (
+      <Container className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <h3>No allotment found for the employee</h3>
       </Container>
     );
   }
@@ -437,7 +462,44 @@ const LetterRequestForm = () => {
               </Form.Group>
             </Col>
           </Row>
-
+          <Row className="mb-3">
+            <Col>
+              <Form.Check
+                type="checkbox"
+                label="Letter Required"
+                checked={formData.letterRequired}
+                onChange={handleCheckboxChange}
+              />
+            </Col>
+          </Row>
+          {formData.letterRequired && (
+            <Row className="mb-3">
+              <Col md={6}>
+                <Form.Group controlId="formTo">
+                  <Form.Label>To</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="to"
+                    value={formData.to}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId="formPurpose">
+                  <Form.Label>Purpose</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="purpose"
+                    value={formData.purpose}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+          )}
           <Row className="mb-4">
             <Col>
               <h5>Select Category</h5>
@@ -486,9 +548,13 @@ const LetterRequestForm = () => {
             <Col md={4}>
               <Form.Group controlId="formMandalSelect">
                 <Form.Label>Mandal</Form.Label>
-                <Form.Control as="select" value={selectedMandal} onChange={handleMandalChange}>
+                <Form.Control
+                  as="select"
+                  value={selectedMandal}
+                  onChange={handleMandalChange}
+                >
                   <option value="">Select Mandal</option>
-                  {mandals.map(mandal => (
+                  {mandals.map((mandal) => (
                     <option key={mandal.key} value={mandal.key}>
                       {mandal.value.name}
                     </option>
@@ -499,9 +565,14 @@ const LetterRequestForm = () => {
             <Col md={4}>
               <Form.Group controlId="formVillageSelect">
                 <Form.Label>Village</Form.Label>
-                <Form.Control as="select" value={selectedVillage} onChange={handleVillageChange}>
+                <Form.Control
+                  as="select"
+                  value={selectedVillage}
+                  onChange={handleVillageChange}
+                  disabled={!selectedMandal} // Disable if selectedMandal is empty
+                >
                   <option value="">Select Village</option>
-                  {villages.map(village => (
+                  {villages.map((village) => (
                     <option key={village._id} value={village._id}>
                       {village.name}
                     </option>

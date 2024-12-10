@@ -194,6 +194,9 @@ router.get('/getdocuments/:employeeId/:role', async (req, res) => {
       // Default functionality for other roles
       const employeeGrievances1 = await EmployeeGrievancesTrack.findOne({ employeeId })
       console.log(employeeGrievances1);
+      if(!employeeGrievances1) {
+        return res.status(200).json({grievanceCategories: {}})
+      }
 
       const employeeGrievances = await EmployeeGrievancesTrack.findOne({ employeeId })
         .populate('grievanceCategories.GrievanceRef')
@@ -206,12 +209,12 @@ router.get('/getdocuments/:employeeId/:role', async (req, res) => {
       if (!employeeGrievances) {
         return res.status(404).json({ message: 'Grievances not found for this employee' });
       }
-      console.log(employeeGrievances);
+      console.log("employeeGrievances : ",employeeGrievances);
       res.json(employeeGrievances);
     }
   } catch (error) {
     console.error('Error retrieving grievances:', error);
-    res.status(500).json({ message: 'Error retrieving grievances' });
+    return res.status(500).json({ message: 'Error retrieving grievances' });
   }
 });
 
@@ -236,5 +239,45 @@ router.get('/getdocument/:id', async (req, res) => {
   }
 });
 
+// DELETE Grievance Router
+router.get('/delete-grievance/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Step 1: Find and delete the grievance document in LetterRequest
+    const grievanceDoc = await LetterRequest.findByIdAndDelete(id);
+    if (!grievanceDoc) {
+      return res.status(404).json({ message: 'Grievance not found' });
+    }
+
+    // Step 2: Find and delete the related document in AssignedwithTrackingDocument
+    const trackingDoc = await AssignedwithTrackingDocument.findOneAndDelete({ referenceGrievanceDocument: id });
+    if (!trackingDoc) {
+      return res.status(404).json({ message: 'Assigned tracking document not found' });
+    }
+
+    // Step 3: Find the EmployeeGrievancesTrack document using referenceTrackingDocument
+    const employeeTrackDoc = await EmployeeGrievancesTrack.findById(trackingDoc.referenceTrackingDocument);
+    if (!employeeTrackDoc) {
+      return res.status(404).json({ message: 'Employee grievance track document not found' });
+    }
+
+    // Step 4: Remove the grievance ID from the corresponding grievance category
+    const { category } = grievanceDoc; // Get category from the deleted grievance
+    if (employeeTrackDoc.grievanceCategories[category]) {
+      employeeTrackDoc.grievanceCategories[category] = employeeTrackDoc.grievanceCategories[category].filter(
+        (grievanceId) => grievanceId.toString() !== id
+      );
+
+      // Save the updated EmployeeGrievancesTrack document
+      await employeeTrackDoc.save();
+    }
+
+    return res.status(200).json({ message: 'Grievance and related data deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting grievance:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 module.exports = router;

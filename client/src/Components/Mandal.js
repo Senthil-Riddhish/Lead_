@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Container, Row, Col, Table, Form, Modal } from 'react-bootstrap';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const Mandal = () => {
   const [acs, setAcs] = useState([]);
@@ -49,8 +50,23 @@ const Mandal = () => {
       .then((response) => {
         setMandals([...mandals, response.data.data]);
         closeAddModal();
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Mandal added successfully",
+          showConfirmButton: false,
+          timer: 1500
+        });
       })
-      .catch((error) => console.error('Error adding mandal:', error));
+      .catch((error) => {
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: error.response.data.message,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      });
   };
 
   // Show update modal
@@ -67,15 +83,30 @@ const Mandal = () => {
     setUpdateMandalName('');
   };
 
-    // Update mandal
+  // Update mandal
   const updateMandal = () => {
     axios.put(`http://localhost:8000/ac/edit-mandal/${selectedAc._id}/${selectedMandal._id}`, { name: updateMandalName })
       .then(() => {
         const updatedMandals = mandals.map(m => m._id === selectedMandal._id ? { ...m, name: updateMandalName } : m);
         setMandals(updatedMandals);
         closeUpdateModal();
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Mandal updated successfully",
+          showConfirmButton: false,
+          timer: 1500
+        });
       })
-      .catch((error) => console.error('Error updating mandal:', error));
+      .catch((error) => {
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: error.response.data.message,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      });
   };
 
   // Open Village Modal
@@ -85,9 +116,35 @@ const Mandal = () => {
     setShowVillageModal(true);
   };
 
-  const deleteMandal = (mandal) => {
-    console.log(mandal, selectedAc);
-  }
+  const deleteMandal = async (mandal) => {
+    try {
+      // Call the API to delete the Mandal
+      const response = await axios.delete(`http://localhost:8000/allotment/delete-mandal/${mandal._id}/${selectedAc._id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status === 200) {
+        // Update the mandals state by filtering out the deleted Mandal
+        setMandals((prevMandals) =>
+          prevMandals.filter((m) => m._id !== mandal._id)
+        );
+        console.log("Mandal deleted successfully:", mandal.name);
+      } else {
+        console.error("Failed to delete mandal:", response.data.message);
+      }
+    } catch (error) {
+      if (error.response) {
+        // Server responded with a status other than 2xx
+        console.error("Failed to delete mandal:", error.response.data.message);
+      } else {
+        // Network or other error
+        console.error("Error deleting mandal:", error.message);
+      }
+    }
+  };
+
   // Close Village Modal
   const closeVillageModal = () => {
     setShowVillageModal(false);
@@ -109,6 +166,44 @@ const Mandal = () => {
   const openUpdateVillageModal = (village) => {
     setSelectedVillage(village);
     setUpdateVillageName(village.name);
+  };
+
+  const openDeleteVillageModal = async (village) => {
+    try {
+      // Call the API to delete the Village
+      const response = await fetch(`http://localhost:8000/allotment/delete-village/${village._id}/${selectedMandal._id}/${selectedAc._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // Update the mandals state to remove the deleted village
+        setMandals((prevMandals) =>
+          prevMandals.map((mandal) =>
+            mandal._id === selectedMandal._id
+              ? {
+                ...mandal,
+                villages: mandal.villages.filter((v) => v._id !== village._id),
+              }
+              : mandal
+          )
+        );
+
+        // Update the villages state to remove the deleted village
+        setVillages((prevVillages) =>
+          prevVillages.filter((v) => v._id !== village._id)
+        );
+
+        console.log("Village deleted successfully:", village.name);
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to delete village:", errorData.message);
+      }
+    } catch (error) {
+      console.error("Error deleting village:", error);
+    }
   };
 
   // Update village
@@ -175,10 +270,10 @@ const Mandal = () => {
         <Modal.Body>
           <Form.Group controlId="mandalName">
             <Form.Label>Mandal Name</Form.Label>
-            <Form.Control 
-              type="text" 
-              value={newMandalName} 
-              onChange={(e) => setNewMandalName(e.target.value)} 
+            <Form.Control
+              type="text"
+              value={newMandalName}
+              onChange={(e) => setNewMandalName(e.target.value)}
             />
           </Form.Group>
         </Modal.Body>
@@ -196,10 +291,10 @@ const Mandal = () => {
         <Modal.Body>
           <Form.Group controlId="updateMandalName">
             <Form.Label>Mandal Name</Form.Label>
-            <Form.Control 
-              type="text" 
-              value={updateMandalName} 
-              onChange={(e) => setUpdateMandalName(e.target.value)} 
+            <Form.Control
+              type="text"
+              value={updateMandalName}
+              onChange={(e) => setUpdateMandalName(e.target.value)}
             />
           </Form.Group>
         </Modal.Body>
@@ -217,10 +312,10 @@ const Mandal = () => {
         <Modal.Body>
           <Form.Group controlId="villageName">
             <Form.Label>New Village Name</Form.Label>
-            <Form.Control 
-              type="text" 
-              value={newVillageName} 
-              onChange={(e) => setNewVillageName(e.target.value)} 
+            <Form.Control
+              type="text"
+              value={newVillageName}
+              onChange={(e) => setNewVillageName(e.target.value)}
             />
             <Button variant="primary" className="mt-2" onClick={addVillage}>Add Village</Button>
           </Form.Group>
@@ -236,7 +331,8 @@ const Mandal = () => {
                 <tr key={village._id}>
                   <td>{village.name}</td>
                   <td>
-                    <Button variant="outline-secondary" onClick={() => openUpdateVillageModal(village)}>Update</Button>
+                    <Button className='m-2' variant="outline-secondary" onClick={() => openUpdateVillageModal(village)}>Update</Button>
+                    <Button variant="outline-secondary" onClick={() => openDeleteVillageModal(village)}>Delete</Button>
                   </td>
                 </tr>
               ))}
@@ -257,10 +353,10 @@ const Mandal = () => {
           <Modal.Body>
             <Form.Group controlId="updateVillageName">
               <Form.Label>Village Name</Form.Label>
-              <Form.Control 
-                type="text" 
-                value={updateVillageName} 
-                onChange={(e) => setUpdateVillageName(e.target.value)} 
+              <Form.Control
+                type="text"
+                value={updateVillageName}
+                onChange={(e) => setUpdateVillageName(e.target.value)}
               />
             </Form.Group>
           </Modal.Body>

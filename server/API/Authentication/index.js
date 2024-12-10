@@ -4,16 +4,14 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 //Models
-import { UserModel } from "../../Database/allModels";
-import EmployeeModel from "../../Database/allModels";
-
+import { UserModel,EmployeeModel } from "../../Database/allModels";
 // Validation
 import { ValidateSignup, ValidateSignin } from "../../Validation/authentication";
 import {ValidateEmployee} from "../../Validation/employeeValidation";
 
 import generateJwtToken from "../../Utils/generateJwtToken";
 
-const Router = express.Router();
+const router = express.Router();
 
 /*
 Route     /signup
@@ -22,7 +20,7 @@ Params    none
 Access    Public
 Method    POST  
 */
-Router.post("/signup", async (req, res) => {
+router.post("/signup", async (req, res) => {
     try {
       await ValidateSignup(req.body.credentials);
       await UserModel.findByEmailAndPhone(req.body.credentials);
@@ -43,7 +41,7 @@ Router.post("/signup", async (req, res) => {
   Access    Public
   Method    POST  
   */
-  Router.post("/signin", async (req, res) => {
+  router.post("/signin", async (req, res) => {
     try {
       await ValidateSignin(req.body.credentials);
       console.log("validation completed");
@@ -63,7 +61,7 @@ Router.post("/signup", async (req, res) => {
     }
 });  
 
-Router.post("/create-emp", async(req,res)=>{
+router.post("/create-emp", async(req,res)=>{
     try {
         await ValidateEmployee(req.body.credentials)
         console.log("validation complete");
@@ -80,7 +78,7 @@ Router.post("/create-emp", async(req,res)=>{
 
 });
 
-Router.post('/getTokeninfo', async(req, res) => {
+router.post('/getTokeninfo', async(req, res) => {
   // Now you can access userId and role
   console.log(req.body);
   const token = req.body.token;
@@ -91,13 +89,13 @@ Router.post('/getTokeninfo', async(req, res) => {
         // Access user information from the decoded token
         const userId = decoded.user;
         const role = decoded.role;
-        res.json({
+        return res.json({
           userId,
           role
       });
     } catch (err) {
-        res.status(403).json({ message: 'Invalid Token' });
+        return res.status(403).json({ message: 'Invalid Token' });
     }
 });
 
-export default Router;
+export default router;

@@ -1,5 +1,5 @@
 const express = require('express');
-import {Allotment, EmployeeModel, AC, LetterRequest, EmployeeGrievancesTrack, AssignedwithTrackingDocument} from '../../Database/allModels'; // Import Allotment model
+import { Allotment, EmployeeModel, AC, LetterRequest, EmployeeGrievancesTrack, AssignedwithTrackingDocument } from '../../Database/allModels'; // Import Allotment model
 const router = express.Router();
 
 // Add new allotment route
@@ -19,11 +19,11 @@ router.post('/add-allotment', async (req, res) => {
       return res.status(404).json({ message: 'AC (Assembly Constituency) not found' });
     }
 
-    // Check if the employee has already been assigned to the same AC
-    const existingAllotment = await Allotment.findOne({ employee: employeeId, ac: acId });
+    // Check if the employee has already been assigned to the any AC
+    const existingAllotment = await Allotment.findOne({ employee: employeeId});
     if (existingAllotment) {
-      return res.status(403).json({ 
-        message: `EMPLOYEE '${employee.name}' HAS ALREADY BEEN ASSIGNED WITH ${ac.name}` 
+      return res.status(403).json({
+        message: `EMPLOYEE '${employee.name}' HAS ALREADY BEEN ASSIGNED WITH ${ac.name}`
       });
     }
 
@@ -37,10 +37,10 @@ router.post('/add-allotment', async (req, res) => {
     await newAllotment.save();
 
     // Return success response
-    return res.status(200).json({ 
-      status: 'success', 
-      message: 'Allotment created successfully!', 
-      allotment: newAllotment 
+    return res.status(200).json({
+      status: 'success',
+      message: 'Allotment created successfully!',
+      allotment: newAllotment
     });
 
   } catch (error) {
@@ -104,16 +104,15 @@ router.get('/allotments', async (req, res) => {
 });
 
 // Route to get the AC ID based on employee ID
-router.get('/allotment/:employeeId', async (req, res) => {
+router.get('/employee-allotment/:employeeId', async (req, res) => {
   try {
     const { employeeId } = req.params;
-
     // Find the allotment for the specified employee ID
     const allotment = await Allotment.findOne({ employee: employeeId }); // Populate AC details if needed
 
     // Check if the allotment exists
     if (!allotment) {
-      return res.status(404).json({ message: 'No allotment found for the specified employee' });
+      return res.status(200).json({ message: 'No allotment found for the specified employee' });
     }
     console.log(allotment);
     // Respond with the AC ID and additional AC information
@@ -170,5 +169,124 @@ router.delete('/delete-ac/:acId', async (req, res) => {
   }
 });
 
+router.delete('/delete-mandal/:mandalId/:acId', async (req, res) => {
+  const { mandalId, acId } = req.params;
+
+  try {
+    // Step 1: Find the AC and remove the Mandal
+    const ac = await AC.findById(acId);
+    if (!ac) {
+      return res.status(404).json({ message: "AC not found" });
+    }
+
+    const mandalIndex = ac.mandals.findIndex(mandal => mandal._id.toString() === mandalId);
+    if (mandalIndex === -1) {
+      return res.status(404).json({ message: "Mandal not found in the specified AC" });
+    }
+
+    // Remove the Mandal
+    const removedMandal = ac.mandals.splice(mandalIndex, 1)[0];
+    await ac.save();
+
+    // Step 2: Find all LetterRequest documents linked to the Mandal
+    const letterRequests = await LetterRequest.find({ mandalId });
+    const letterRequestIds = letterRequests.map(lr => lr._id);
+
+    for (const letterRequest of letterRequests) {
+      // Step 3: Find the assigned tracking document
+      const assignedDoc = await AssignedwithTrackingDocument.findOne({
+        referenceGrievanceDocument: letterRequest._id
+      });
+
+      if (assignedDoc) {
+        const { referenceTrackingDocument } = assignedDoc;
+
+        // Step 4: Find and update the EmployeeGrievancesTrack document
+        const trackingDoc = await EmployeeGrievancesTrack.findById(referenceTrackingDocument);
+        if (trackingDoc) {
+          const category = letterRequest.category; // Get the category of the LetterRequest
+          if (trackingDoc.grievanceCategories[category]) {
+            // Remove the LetterRequest ID from the category array
+            trackingDoc.grievanceCategories[category] = trackingDoc.grievanceCategories[category].filter(
+              id => id.toString() !== letterRequest._id.toString()
+            );
+            await trackingDoc.save();
+          }
+        }
+      }
+    }
+
+    // Clean up LetterRequest documents
+    await LetterRequest.deleteMany({ _id: { $in: letterRequestIds } });
+
+    res.status(200).json({ message: "Mandal and associated documents deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting mandal:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
+router.delete('/delete-village/:villageId/:mandalId/:acId', async (req, res) => {
+  const { villageId, mandalId, acId } = req.params;
+
+  try {
+    // Find the AC by acId
+    const ac = await AC.findById(acId);
+    if (!ac) {
+      return res.status(404).json({ message: "Assembly Constituency not found" });
+    }
+
+    // Find the Mandal by mandalId within the AC
+    const mandal = ac.mandals.id(mandalId);
+    if (!mandal) {
+      return res.status(404).json({ message: "Mandal not found in this AC" });
+    }
+
+    // Find and remove the Village by villageId within the Mandal
+    const villageIndex = mandal.villages.findIndex(village => village._id.toString() === villageId);
+    if (villageIndex === -1) {
+      return res.status(404).json({ message: "Village not found in this Mandal" });
+    }
+
+    mandal.villages.splice(villageIndex, 1); // Remove the village
+    await ac.save(); // Save the updated AC document
+    // Step 2: Find all LetterRequest documents linked to the Mandal
+    const letterRequests = await LetterRequest.find({ villageId });
+    const letterRequestIds = letterRequests.map(lr => lr._id);
+
+    for (const letterRequest of letterRequests) {
+      // Step 3: Find the assigned tracking document
+      const assignedDoc = await AssignedwithTrackingDocument.findOne({
+        referenceGrievanceDocument: letterRequest._id
+      });
+
+      if (assignedDoc) {
+        const { referenceTrackingDocument } = assignedDoc;
+
+        // Step 4: Find and update the EmployeeGrievancesTrack document
+        const trackingDoc = await EmployeeGrievancesTrack.findById(referenceTrackingDocument);
+        if (trackingDoc) {
+          const category = letterRequest.category; // Get the category of the LetterRequest
+          if (trackingDoc.grievanceCategories[category]) {
+            // Remove the LetterRequest ID from the category array
+            trackingDoc.grievanceCategories[category] = trackingDoc.grievanceCategories[category].filter(
+              id => id.toString() !== letterRequest._id.toString()
+            );
+            await trackingDoc.save();
+          }
+        }
+      }
+    }
+
+    // Clean up LetterRequest documents
+    await LetterRequest.deleteMany({ _id: { $in: letterRequestIds } });
+
+    res.status(200).json({ message: "Mandal and associated documents deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting village:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
 module.exports = router;
-  
