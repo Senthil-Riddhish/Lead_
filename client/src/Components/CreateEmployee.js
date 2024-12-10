@@ -13,7 +13,7 @@ const CreateEmployee = () => {
     panId: '',
     aadharId: '',
     scores: {
-      xth: '',
+      xth: '',  
       xiith: '',
       bachelors: '',
       masters: '',

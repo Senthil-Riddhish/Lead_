@@ -83,32 +83,78 @@ const AddAC = () => {
     setShowModal(true);
   };
 
-  const openDeleteAC = async(ac) => {
+  const openDeleteAC = async (ac) => {
     try {
-      // Log the current AC and state for debugging
-      console.log("AC to delete:", ac);
-      console.log("Current ACs:", acs);
-
-      // Send a DELETE request to the server
-      const response = await axios.delete(`http://localhost:8000/allotment/delete-ac/${ac._id}`);
-
-      // If the deletion is successful
-      if (response.status === 200) {
-        console.log("Deletion successful:", response.data);
-
-        // Filter out the deleted AC from the acs array
-        const updatedACs = acs.filter((item) => item._id !== ac._id);
-
-        // Update the state with the new AC array
-        setAcs(updatedACs);
-        console.log("Updated ACs:", updatedACs);
-      } else {
-        console.error("Failed to delete AC. Status:", response.status);
+      // Show the confirmation dialog
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+      });
+  
+      if (result.isConfirmed) { // Proceed only if the user confirms
+        try {
+          // Log the current AC and state for debugging
+          console.log("AC to delete:", ac);
+          console.log("Current ACs:", acs);
+  
+          // Send a DELETE request to the server
+          const response = await axios.delete(`http://localhost:8000/allotment/delete-ac/${ac._id}`);
+  
+          // If the deletion is successful
+          if (response.status === 200) {
+            console.log("Deletion successful:", response.data);
+  
+            // Filter out the deleted AC from the `acs` array
+            const updatedACs = acs.filter((item) => item._id !== ac._id);
+  
+            // Update the state with the new AC array
+            setAcs(updatedACs);
+  
+            // Show success alert
+            Swal.fire({
+              title: "Deleted!",
+              text: "The AC has been successfully deleted.",
+              icon: "success",
+              timer: 1500,
+              showConfirmButton: false
+            });
+          } else {
+            console.error("Failed to delete AC. Status:", response.status);
+            Swal.fire({
+              title: "Error!",
+              text: "Failed to delete the AC. Please try again.",
+              icon: "error"
+            });
+          }
+        } catch (error) {
+          console.error("Error while deleting AC:", error);
+  
+          // Show error alert
+          Swal.fire({
+            title: "Error!",
+            text: "An error occurred while deleting the AC. Please try again.",
+            icon: "error"
+          });
+        }
       }
     } catch (error) {
-      console.error("Error while deleting AC:", error);
+      console.error("Swal error or cancellation:", error);
+  
+      // Show error alert if something goes wrong with Swal or user cancels
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: "Couldn't delete the AC. Something went wrong.",
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
-  }
+  };  
 
   const handleUpdateAC = async () => {
     setLoading(true);

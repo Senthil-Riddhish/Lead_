@@ -41,7 +41,7 @@ const EmployeeDatabase = () => {
     });
   };
 
-  const deleteEmployee = async (employee, setEmployees, employees) => {
+  const deleteEmployee = async (employee) => {
     try {
       const response = await axios.delete(`http://localhost:8000/employee/delete-employee/${employee._id}`);
       if (response.status === 200) {
@@ -52,12 +52,13 @@ const EmployeeDatabase = () => {
           title: "Employee deleted successfully",
           showConfirmButton: false,
           timer: 1500
-        });
+        }); 
 
         // Remove the deleted employee from the employees array
+        console.log(employee._id, employees);
         const updatedEmployees = employees.filter(emp => emp._id !== employee._id);
         setEmployees(updatedEmployees); // Update the state or variable holding the employee list
-      }
+      } 
     } catch (error) {
       console.error('Error deleting employee:', error);
       Swal.fire({
@@ -102,6 +103,10 @@ const EmployeeDatabase = () => {
       setSelectedEmployee(null);
       fetchEmployees(); // Refresh employee list
     } catch (error) {
+      console.log(
+        error
+      );
+      
       switch (error.status) {
         case 400:
           Swal.fire({

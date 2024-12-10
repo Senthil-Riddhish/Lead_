@@ -118,30 +118,83 @@ const Mandal = () => {
 
   const deleteMandal = async (mandal) => {
     try {
-      // Call the API to delete the Mandal
-      const response = await axios.delete(`http://localhost:8000/allotment/delete-mandal/${mandal._id}/${selectedAc._id}`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      // Show confirmation dialog before deleting the Mandal
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: `You are about to delete the mandal "${mandal.name}". This action cannot be undone!`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
       });
 
-      if (response.status === 200) {
-        // Update the mandals state by filtering out the deleted Mandal
-        setMandals((prevMandals) =>
-          prevMandals.filter((m) => m._id !== mandal._id)
-        );
-        console.log("Mandal deleted successfully:", mandal.name);
-      } else {
-        console.error("Failed to delete mandal:", response.data.message);
+      if (result.isConfirmed) { // Proceed only if the user confirms
+        try {
+          // Call the API to delete the Mandal
+          const response = await axios.delete(
+            `http://localhost:8000/allotment/delete-mandal/${mandal._id}/${selectedAc._id}`,
+            {
+              headers: {
+                "Content-Type": "application/json"
+              }
+            }
+          );
+
+          if (response.status === 200) {
+            // Update the mandals state by filtering out the deleted Mandal
+            setMandals((prevMandals) =>
+              prevMandals.filter((m) => m._id !== mandal._id)
+            );
+
+            // Log success and show a success alert
+            console.log("Mandal deleted successfully:", mandal.name);
+            Swal.fire({
+              title: "Deleted!",
+              text: `The mandal "${mandal.name}" has been successfully deleted.`,
+              icon: "success",
+              timer: 1500,
+              showConfirmButton: false
+            });
+          } else {
+            // Handle unexpected response status
+            console.error("Failed to delete mandal:", response.data.message);
+            Swal.fire({
+              title: "Error!",
+              text: "Failed to delete the mandal. Please try again.",
+              icon: "error"
+            });
+          }
+        } catch (error) {
+          // Handle API errors
+          if (error.response) {
+            console.error("Failed to delete mandal:", error.response.data.message);
+            Swal.fire({
+              title: "Error!",
+              text: error.response.data.message || "Failed to delete the mandal.",
+              icon: "error"
+            });
+          } else {
+            console.error("Error deleting mandal:", error.message);
+            Swal.fire({
+              title: "Error!",
+              text: "An error occurred while deleting the mandal. Please try again.",
+              icon: "error"
+            });
+          }
+        }
       }
     } catch (error) {
-      if (error.response) {
-        // Server responded with a status other than 2xx
-        console.error("Failed to delete mandal:", error.response.data.message);
-      } else {
-        // Network or other error
-        console.error("Error deleting mandal:", error.message);
-      }
+      console.error("Swal error or cancellation:", error);
+
+      // Show an error alert if something goes wrong with Swal or the user cancels
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: "Couldn't delete the mandal. Something went wrong.",
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
@@ -170,39 +223,89 @@ const Mandal = () => {
 
   const openDeleteVillageModal = async (village) => {
     try {
-      // Call the API to delete the Village
-      const response = await fetch(`http://localhost:8000/allotment/delete-village/${village._id}/${selectedMandal._id}/${selectedAc._id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      // Show confirmation dialog before deleting the village
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: `You are about to delete the village "${village.name}". This action cannot be undone!`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
       });
 
-      if (response.ok) {
-        // Update the mandals state to remove the deleted village
-        setMandals((prevMandals) =>
-          prevMandals.map((mandal) =>
-            mandal._id === selectedMandal._id
-              ? {
-                ...mandal,
-                villages: mandal.villages.filter((v) => v._id !== village._id),
+      if (result.isConfirmed) { // Proceed only if the user confirms
+        try {
+          // Call the API to delete the Village
+          const response = await fetch(
+            `http://localhost:8000/allotment/delete-village/${village._id}/${selectedMandal._id}/${selectedAc._id}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json"
               }
-              : mandal
-          )
-        );
+            }
+          );
 
-        // Update the villages state to remove the deleted village
-        setVillages((prevVillages) =>
-          prevVillages.filter((v) => v._id !== village._id)
-        );
+          if (response.ok) {
+            // Update the mandals state to remove the deleted village
+            setMandals((prevMandals) =>
+              prevMandals.map((mandal) =>
+                mandal._id === selectedMandal._id
+                  ? {
+                    ...mandal,
+                    villages: mandal.villages.filter((v) => v._id !== village._id)
+                  }
+                  : mandal
+              )
+            );
 
-        console.log("Village deleted successfully:", village.name);
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to delete village:", errorData.message);
+            // Update the villages state to remove the deleted village
+            setVillages((prevVillages) =>
+              prevVillages.filter((v) => v._id !== village._id)
+            );
+
+            console.log("Village deleted successfully:", village.name);
+
+            // Show success alert
+            Swal.fire({
+              title: "Deleted!",
+              text: `The village "${village.name}" has been successfully deleted.`,
+              icon: "success",
+              timer: 1500,
+              showConfirmButton: false
+            });
+          } else {
+            const errorData = await response.json();
+            console.error("Failed to delete village:", errorData.message);
+            Swal.fire({
+              title: "Error!",
+              text: errorData.message || "Failed to delete the village. Please try again.",
+              icon: "error"
+            });
+          }
+        } catch (error) {
+          console.error("Error deleting village:", error);
+
+          // Show error alert for network or unexpected errors
+          Swal.fire({
+            title: "Error!",
+            text: "An error occurred while deleting the village. Please try again.",
+            icon: "error"
+          });
+        }
       }
     } catch (error) {
-      console.error("Error deleting village:", error);
+      console.error("Swal error or cancellation:", error);
+
+      // Show an error alert if something goes wrong with Swal or the user cancels
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: "Couldn't delete the village. Something went wrong.",
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
