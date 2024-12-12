@@ -36,7 +36,12 @@ const Login = ({ setIsAuthenticated }) => {
   };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+    <Container
+      className="d-flex justify-content-center align-items-center"
+      style={{
+        height: '100vh'
+      }}
+    >
       <Form onSubmit={handleLogin} style={{ width: '300px' }}>
         <h2 className="text-center">Login</h2>
         {error && <p className="text-danger">{error}</p>}
@@ -66,7 +71,7 @@ const Login = ({ setIsAuthenticated }) => {
           Login
         </Button>
       </Form>
-    </Container>
+    </Container >
   );
 };
 

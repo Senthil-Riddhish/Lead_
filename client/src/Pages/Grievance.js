@@ -39,14 +39,14 @@ const LetterRequestForm = () => {
   const location = useLocation();
   const grievanceId = location.state?.grievanceId || null;
   const navigate = useNavigate();
-
+ 
   useEffect(() => {
     const initializePage = async () => {
       try {
         const token = sessionStorage.getItem('token');
         console.log(token);
         if (!token) {
-          navigate('/login');
+          navigate('/login'); 
         } else {
           const tokenResponse = await axios.post('http://localhost:8000/auth/getTokeninfo', { token });
           const { userId, role } = tokenResponse.data;
@@ -74,7 +74,7 @@ const LetterRequestForm = () => {
   }, [navigate, grievanceId]);
   useEffect(() => {
     console.log("Updated formData:", formData);
-  }, [formData]);
+  }, [formData]); 
 
   const fetchGrievanceData = async (grievanceId) => {
     try {

@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import { LetterRequest, EmployeeGrievancesTrack, AssignedwithTrackingDocument } from "../../Database/allModels" // Assuming the model is saved here
+import { LetterRequest, EmployeeGrievancesTrack, AssignedwithTrackingDocument,EmployeeModel, AC } from "../../Database/allModels" // Assuming the model is saved here
 const router = express.Router();
 /**
  * Route to add a new request
@@ -277,6 +277,98 @@ router.get('/delete-grievance/:id', async (req, res) => {
   } catch (error) {
     console.error('Error deleting grievance:', error);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Consolidated API route
+router.get('/consolidated-data/:userId/:role', async (req, res) => {
+  const { userId, role } = req.params;
+
+  try {
+    if (role === '0') {
+      // Role 0: Fetch all ACs, all employees, and categorized documents
+
+      // Fetch all AC records
+      const getAllAC = await AC.find() || [];
+
+      // Fetch all employees excluding password
+      const employees = await EmployeeModel.find({}, { password: 0 }) || [];
+
+      // Fetch and categorize grievances
+      const letterRequests = await LetterRequest.find();
+      const categorizedGrievances = {
+        GrievanceRef: [],
+        CMRF: [],
+        JOBS: [],
+        DEVELOPMENT: [],
+        Transfer: [],
+        Others: []
+      };
+
+      letterRequests.forEach((doc) => {
+        const category = doc.category;
+        if (categorizedGrievances[category]) {
+          categorizedGrievances[category].push(doc);
+        } else {
+          console.log("Doesn't match with any category");
+        }
+      });
+
+      // Return consolidated data
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          allAC: getAllAC,
+          employees,
+          grievanceCategories: categorizedGrievances
+        }
+      });
+
+    } else if (role === '1') {
+      // Role 1: Fetch grievances for a specific employee
+      const employeeGrievances = await EmployeeGrievancesTrack.findOne({ employeeId: userId })
+        .populate('grievanceCategories.GrievanceRef')
+        .populate('grievanceCategories.CMRF')
+        .populate('grievanceCategories.JOBS')
+        .populate('grievanceCategories.DEVELOPMENT')
+        .populate('grievanceCategories.Transfer')
+        .populate('grievanceCategories.Others');
+
+      if (!employeeGrievances) {
+        return res.status(200).json({
+          status: 'success',
+          data: {
+            grievanceCategories: {
+              GrievanceRef: [],
+              CMRF: [],
+              JOBS: [],
+              DEVELOPMENT: [],
+              Transfer: [],
+              Others: []
+            }
+          }
+        });
+      }
+
+      // Return employee grievances
+      return res.status(200).json({
+        status: 'success',
+        data: employeeGrievances
+      });
+    } else {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid role provided'
+      });
+    }
+
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Internal server error',
+      error: error.message
+    });
   }
 });
 
