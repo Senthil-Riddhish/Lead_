@@ -1,0 +1,57 @@
+.container-fluid {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.login-container.container {
+    max-width: 1950px;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.bg-body-tertiary {
+    --bs-bg-opacity: 0;
+    background-color: white !important;
+}
+
+.login-container {
+    position: relative;
+    /* Ensure the container takes up the full viewport */
+    height: 100vh;
+    /* Full height of the browser viewport */
+    width: 100vw;
+    /* Full width of the browser viewport */
+    background-size: cover;
+
+    object-fit: contain;
+
+}
+
+
+/* Background image for desktop devices */
+@media (min-width: 768px) {
+    .login-container {
+        background-image: url('../Images/web3.png');
+        /* Path to desktop image */
+    }
+}
+
+/* Background image for mobile devices */
+@media (max-width: 767px) {
+    .login-container {
+        background-image: url('');
+        /* Path to mobile image */
+    }
+}
+
+/* Custom font size for SweetAlert2 title */
+.swal-title {
+    font-size: 20px;
+    /* Adjust to your desired size */
+}
+
+/* Custom font size for the popup content */
+.swal-popup {
+    font-size: 16px;
+    /* Adjust to your desired size */
+}
