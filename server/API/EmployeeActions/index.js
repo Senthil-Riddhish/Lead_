@@ -1,6 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
-import {EmployeeModel, EmployeeGrievancesTrack, AssignedwithTrackingDocument, Allotment, LeaveData, LeaveHistory, UserModel} from "../../Database/allModels";
+import { EmployeeModel, EmployeeGrievancesTrack, AssignedwithTrackingDocument, Allotment, LeaveData, LeaveHistory, UserModel } from "../../Database/allModels";
 import { ValidateEmployee } from "../../Validation/employeeValidation";
 import bcrypt from "bcryptjs";
 const router = express.Router();
@@ -14,11 +14,11 @@ router.delete('/delete-employee/:id', async (req, res) => {
     return res.status(400).json({ message: 'Invalid employee ID' });
   }
 
-  try { 
+  try {
     // Attempt to delete the employee
     const deletedEmployee = await EmployeeModel.findByIdAndDelete(id);
-    console.log(deletedEmployee, id );
-    
+    console.log(deletedEmployee, id);
+
     if (!deletedEmployee) {
       console.error('Employee not found with ID:', id);
       return res.status(404).json({ message: 'Employee not found' });
@@ -57,6 +57,14 @@ router.delete('/delete-employee/:id', async (req, res) => {
       await EmployeeGrievancesTrack.findByIdAndDelete(grievancesTrack._id);
     }
 
+    // Delete all records in LeaveHistory where employeeId matches
+    const deletedLeaveHistory = await LeaveHistory.deleteMany({ employeeId: id });
+    console.log('Deleted LeaveHistory Count:', deletedLeaveHistory.deletedCount);
+
+    // Delete all records in LeaveData where employeeId matches
+    const deletedLeaveData = await LeaveData.deleteMany({ employeeId: id });
+    console.log('Deleted LeaveData Count:', deletedLeaveData.deletedCount);
+
     return res.status(200).json({
       message: 'Employee, related documents, and allotments deleted successfully',
       deletedAllotments: deletedAllotments.deletedCount,
@@ -76,9 +84,9 @@ router.put('/edit-employee/:id', async (req, res) => {
     // Remove the `_id` field from updateData
     var tempFormData = updateData
     delete tempFormData._id;
-    delete tempFormData.createdAt 
-    delete  tempFormData.updatedAt 
-    delete  tempFormData.__v  
+    delete tempFormData.createdAt
+    delete tempFormData.updatedAt
+    delete tempFormData.__v
 
     // Validate the employee data using Joi
     await ValidateEmployee(tempFormData);
@@ -484,7 +492,7 @@ router.put('/cancel-leave/:employeeId/:leaveId', async (req, res) => {
 router.get('/getAllHistoryOfAllEmployees', async (req, res) => {
   try {
     const leaveHistory = await LeaveHistory.find().populate('employeeId', 'name'); // Populate to get employee names
-
+    console.log(leaveHistory);
     const notApprovedLeaves = leaveHistory.reduce((acc, curr) => {
       const notApproved = curr.leaveHistory.filter(leave => leave.approved === "NOT YET APPROVED");
       if (notApproved.length > 0) {
@@ -496,9 +504,10 @@ router.get('/getAllHistoryOfAllEmployees', async (req, res) => {
       }
       return acc;
     }, []);
-
+    console.log("NOT YET APPROVED",notApprovedLeaves);
     const approvedLeaves = leaveHistory.reduce((acc, curr) => {
       const approved = curr.leaveHistory.filter(leave => leave.approved === "APPROVED");
+      console.log(approved.length);
       if (approved.length > 0) {
         acc.push(...approved.map(leave => ({
           ...leave.toObject(),
@@ -506,21 +515,31 @@ router.get('/getAllHistoryOfAllEmployees', async (req, res) => {
           employeeId: curr.employeeId._id
         })));
       }
+      console.log(123);
       return acc;
     }, []);
-
+    console.log("APPROVED", approvedLeaves);
     const rejectedLeaves = leaveHistory.reduce((acc, curr) => {
-      const rejected = curr.leaveHistory.filter(leave => leave.approved === "REJECTED");
+      const rejected = (curr.leaveHistory || []).filter(leave => leave.approved === "REJECTED");
+      console.log("rejected",rejected);
       if (rejected.length > 0) {
+        console.log(rejected.length);
+        
+        console.log(curr.employeeId.name,curr.employeeId._id);
+        
         acc.push(...rejected.map(leave => ({
-          ...leave.toObject(),
+          ...leave,
           employeeName: curr.employeeId.name,
-          employeeId: curr.employeeId._id
+          employeeId: curr.employeeId._id,
         })));
+        console.log(acc);
+        
       }
+      console.log("acc",acc);
+      
       return acc;
     }, []);
-
+    console.log(rejectedLeaves);
     res.json({ notApprovedLeaves, approvedLeaves, rejectedLeaves });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
@@ -550,9 +569,9 @@ router.put('/approve-leave/:leaveId/:employeeId', async (req, res) => {
   }
 });
 
-router.put('/reject-leave/:leaveId/:employeeId',async (req, res) => {
+router.put('/reject-leave/:leaveId/:employeeId', async (req, res) => {
   try {
-    const { leaveId,employeeId } = req.params;
+    const { leaveId, employeeId } = req.params;
     const leaveHistory = await LeaveHistory.findOne({ employeeId });
 
     if (!leaveHistory) {
@@ -595,7 +614,7 @@ router.put('/reject-leave/:leaveId/:employeeId',async (req, res) => {
 router.put('/update-password/:id', async (req, res) => {
   const { password } = req.body;
   console.log(password);
-  
+
   try {
     const employee = await EmployeeModel.findById(req.params.id);
     if (!employee) {
@@ -620,7 +639,7 @@ router.get('/profile/:id', async (req, res) => {
 
     if (!user) {
       console.log("Not an employee");
-      
+
       // If not found in EmployeeModel, search in UserModel
       user = await UserModel.findById(userId).select('-password');
     }
@@ -639,4 +658,3 @@ router.get('/profile/:id', async (req, res) => {
 });
 
 export default router;
-  
