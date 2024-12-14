@@ -5,6 +5,9 @@ import Swal from 'sweetalert2';
 const EmployeeDatabase = () => {
   const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedPasswordEmployee, setSelectedPasswordEmployee] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const [updateData, setUpdateData] = useState({
     scores: {
       xth: '',
@@ -41,6 +44,41 @@ const EmployeeDatabase = () => {
     });
   };
 
+  const handlePasswordClick=(employee)=> {
+    setShowPasswordModal(true)
+    setSelectedPasswordEmployee(employee._id)
+  }
+
+  const handlePasswordChangeSubmit = async () => {
+    console.log(selectedPasswordEmployee);
+    try {
+      const response = await axios.put(
+        `http://localhost:8000/employee/update-password/${selectedPasswordEmployee}`,
+        { password: newPassword }
+      );
+      if (response.status === 200) {
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Password updated successfully",
+          showConfirmButton: false,
+          timer: 1500
+        });
+        setShowPasswordModal(false);
+        setNewPassword("");
+      }
+    } catch (error) {
+      console.error('Error updating password:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: "Error updating password",
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }
+  };
+
   const deleteEmployee = async (employee) => {
     try {
       const response = await axios.delete(`http://localhost:8000/employee/delete-employee/${employee._id}`);
@@ -52,13 +90,13 @@ const EmployeeDatabase = () => {
           title: "Employee deleted successfully",
           showConfirmButton: false,
           timer: 1500
-        }); 
+        });
 
         // Remove the deleted employee from the employees array
         console.log(employee._id, employees);
         const updatedEmployees = employees.filter(emp => emp._id !== employee._id);
         setEmployees(updatedEmployees); // Update the state or variable holding the employee list
-      } 
+      }
     } catch (error) {
       console.error('Error deleting employee:', error);
       Swal.fire({
@@ -106,7 +144,7 @@ const EmployeeDatabase = () => {
       console.log(
         error
       );
-      
+
       switch (error.status) {
         case 400:
           Swal.fire({
@@ -149,12 +187,35 @@ const EmployeeDatabase = () => {
               <td>
                 <Button className='m-1' variant="warning" onClick={() => handleUpdateClick(employee)}>Update</Button>
                 <Button variant="warning" onClick={() => deleteEmployee(employee)}>Delete</Button>
+                <Button className='m-1' variant="info" onClick={() => {handlePasswordClick(employee); }}>Change Password</Button>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
-
+      {/* Change Password Modal */}
+      <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Change Password</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group>
+              <Form.Label>New Password</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Enter new password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowPasswordModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={handlePasswordChangeSubmit}>Update Password</Button>
+        </Modal.Footer>
+      </Modal>
       <Modal show={!!selectedEmployee} onHide={() => setSelectedEmployee(null)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Update Employee Details</Modal.Title>

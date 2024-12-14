@@ -3,6 +3,7 @@ import { Table, Container, Row, Col, Spinner, Alert, Button } from 'react-bootst
 import { Form } from 'react-bootstrap';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import JsonToPdf from './PDFView';
 import { useNavigate } from 'react-router-dom';
 
 const GrievanceTable = () => {
@@ -20,6 +21,9 @@ const GrievanceTable = () => {
   const [selectedVillage, setSelectedVillage] = useState('');
   const [isAcAllocated, setIsAcAllocated] = useState(true);
   const [token, setToken] = useState('');
+  const [acMap, setAcMap] = useState(new Map());
+  const [mandalMap, setMandalMap] = useState(new Map());
+  const [villageMap, setVillageMap] = useState(new Map());  
   const [tokenInfo, setUserInfo] = useState({
     userId: '',
     role: ''
@@ -54,7 +58,32 @@ const GrievanceTable = () => {
 
     initializePage();
   }, [navigate]);
-
+  const fetchAllACMandalVillageData = (jsonData) => {
+    const acMapTemp = new Map();
+    const mandalMapTemp = new Map();
+    const villageMapTemp = new Map();
+  
+    // Populate temporary maps
+    jsonData.data.forEach(ac => {
+      acMapTemp.set(ac._id, ac.name);
+      ac.mandals.forEach(mandal => {
+        mandalMapTemp.set(mandal._id, mandal.name);
+        mandal.villages.forEach(village => {
+          villageMapTemp.set(village._id, village.name);
+        });
+      });
+    });
+  
+    // Update state with the populated maps
+    setAcMap(acMapTemp);
+    setMandalMap(mandalMapTemp);
+    setVillageMap(villageMapTemp);
+  
+    // Log to verify
+    console.log("AC Map:", acMapTemp);
+    console.log("Mandal Map:", mandalMapTemp);
+    console.log("Village Map:", villageMapTemp);
+  };  
   const fetchEmployeeAcDetails = async (employeeId) => {
     try {
       const { data } = await axios.get(`http://localhost:8000/allotment/employee-allotment/${employeeId}`);
@@ -66,6 +95,7 @@ const GrievanceTable = () => {
       }
 
       const acDetails = await axios.get('http://localhost:8000/ac/getAll-ac');
+      fetchAllACMandalVillageData(acDetails.data)
       createAcMap(acDetails.data, allotedACId);
     } catch (error) {
       console.error('Error fetching AC details:', error);
@@ -76,12 +106,13 @@ const GrievanceTable = () => {
   const fetchAllAcData = async (allotedACId = '', allocatedMandalId = '', allocatedVillageId = '') => {
     try {
       const { data } = await axios.get('http://localhost:8000/ac/getAll-ac');
+      fetchAllACMandalVillageData(data);
       createAcMap(data, allotedACId, allocatedMandalId, allocatedVillageId);
     } catch (error) {
       console.error('Error fetching all AC data:', error);
     }
   };
-  
+
 
   const createAcMap = (data, allotedACId = '', allocatedMandalId = '', allocatedVillageId = '') => {
     const acMap = {};
@@ -235,8 +266,9 @@ const GrievanceTable = () => {
         <td>{grievance.category}</td>
         <td>{grievance.token}</td>
         <td>{grievance.name}</td>
-        <td>{grievance.age}</td>
-        <td>{grievance.fatherName}</td>
+        <td>{acMap.get(grievance.acId)}</td>
+        <td>{mandalMap.get(grievance.mandalId)}</td>
+        <td>{villageMap.get(grievance.villageId)}</td>
         <td>{grievance.phoneNumber}</td>
         <td>
           <Button
@@ -254,6 +286,9 @@ const GrievanceTable = () => {
             Delete
           </Button>
         </td>
+        <td>
+          <JsonToPdf jsonData={grievance} acName={acMap} mandalName={mandalMap} villageName={villageMap}/>
+        </td>
       </tr>
     ));
   };
@@ -265,7 +300,7 @@ const GrievanceTable = () => {
     console.log("AC : ", selectedAc);
     console.log("Mandal : ", selectedMandal);
     console.log("Village : ", selectedVillage);
-  
+
     // Flatten all grievance arrays from the category keys
     console.log(allGrievances);
     const allGrievancesjson = Object.values(allGrievances).flat();
@@ -278,13 +313,13 @@ const GrievanceTable = () => {
       const matchesVillage = selectedVillage ? doc.villageId === selectedVillage : true;
       const matchesCategory = selectedCategory ? doc.category === selectedCategory : true;
       const matchesToekn = token ? doc.token === token : true;
-  
+
       // All conditions must match
       return matchesAc && matchesMandal && matchesVillage && matchesCategory && matchesToekn;
     });
-  
+
     console.log("Filtered Grievances:", filteredGrievances);
-  
+
     // Grouping the filtered grievances by category
     const groupedGrievances = filteredGrievances.reduce((acc, doc) => {
       const category = doc.category; // Default to "Uncategorized" if no category is found
@@ -294,14 +329,14 @@ const GrievanceTable = () => {
       acc[category].push(doc); // Add the document to the appropriate category
       return acc;
     }, {});
-  
+
     // Logging the grouped grievances
     console.log("Grouped Grievances by Category:", groupedGrievances);
-  
+
     // Updating the grievances state with the grouped data
     setGrievances(groupedGrievances);
-  };  
-  
+  };
+
 
   return (
     <Container className="mt-5">
@@ -401,8 +436,9 @@ const GrievanceTable = () => {
                     <th>Category</th>
                     <th>Token</th>
                     <th>Name</th>
-                    <th>Age</th>
-                    <th>Father Name</th>
+                    <th>AC</th>
+                    <th>Mandal</th>
+                    <th>Village</th>
                     <th>Phone Number</th>
                     <th>Edit</th>
                     <th>Delete</th>

@@ -242,11 +242,12 @@ router.get('/getdocument/:id', async (req, res) => {
 // DELETE Grievance Router
 router.get('/delete-grievance/:id', async (req, res) => {
   const { id } = req.params;
-
+  console.log(id);
   try {
     // Step 1: Find and delete the grievance document in LetterRequest
     const grievanceDoc = await LetterRequest.findByIdAndDelete(id);
     if (!grievanceDoc) {
+      console.log(grievanceDoc);
       return res.status(404).json({ message: 'Grievance not found' });
     }
 

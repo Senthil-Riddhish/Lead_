@@ -6,6 +6,7 @@ import About from './Pages/About';
 import EmployeeManagement from './Pages/Services';
 import Grievances from './Pages/Grievance';
 import GrievanceTable from './Pages/GrievanceTable';
+import AttendancePlanner from './Pages/LeavePlanner';
 import Login from './Pages/Login'; // Import Login component
 import "./App.css";
 import { FaHome } from "react-icons/fa";
@@ -34,6 +35,10 @@ const Sidebar = ({ toggleSidebar }) => (
     <Link to="/grievances" onClick={toggleSidebar} className="sidebar-link mb-3">
       <TiContacts className="me-2" />
       Grievances
+    </Link>
+    <Link to="/hrplanner" onClick={toggleSidebar} className="sidebar-link mb-3">
+      <TiContacts className="me-2" />
+      Attendance Planner
     </Link>
     <Link to="/allrecords" onClick={toggleSidebar} className="sidebar-link mb-3">
       <TiContacts className="me-2" />
@@ -93,9 +98,6 @@ const App = () => {
               <Navbar className="bg-body-tertiary">
                 <Container>
                   <Navbar.Collapse className="justify-content-end">
-                    <Navbar.Text className='me-5'>
-                      Signed in as: <a href="#login">Mark Otto</a>
-                    </Navbar.Text>
                     <Button variant="outline-success" onClick={handleLogout}>Logout</Button>
                   </Navbar.Collapse>
                 </Container>
@@ -105,7 +107,8 @@ const App = () => {
                 <Route path="/about" element={<About />} />
                 <Route path="/employee" element={<EmployeeManagement />} />
                 <Route path="/grievances" element={<Grievances />} />
-                <Route path='/allrecords' element={<GrievanceTable/>} />
+                <Route path="/hrplanner" element={<AttendancePlanner/>}/>
+                <Route path='/allrecords' element={<GrievanceTable />} />
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </Routes>
             </Col>

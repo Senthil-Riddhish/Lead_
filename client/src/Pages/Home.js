@@ -20,6 +20,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [userInfo, setUserInfo] = useState({});
+  const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,6 +36,10 @@ const Home = () => {
           );
           const { userId, role } = tokenResponse.data;
           setUserInfo({ userId, role });
+          // Fetch profile details using userId
+          const profileResponse = await axios.get(`http://localhost:8000/employee/profile/${userId}`);
+          setProfile(profileResponse.data);
+          console.log(profileResponse);
 
           // Fetch consolidated data based on user role
           const response = await axios.get(
@@ -83,10 +88,13 @@ const Home = () => {
     name: category,
     value: count,
   }));
+  
 
   return (
     <div style={{ width: '80%', margin: '0 auto', marginTop: '20px' }}>
-      <h1>Welcome, {userInfo.role}</h1>
+      <h1>Welcome, {
+        userInfo.role ? profile.name : `${profile.firstname} ${profile.lastname}`
+      }</h1>
 
       {/* First row: Charts */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
