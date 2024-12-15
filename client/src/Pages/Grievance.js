@@ -9,6 +9,7 @@ import Transfer from '../Components/Transfer';
 import Others from '../Components/Others';
 import { validateForm } from './GrievancesValidation';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const LetterRequestForm = () => {
   const [loading, setLoading] = useState(true); // Loading state
@@ -39,14 +40,14 @@ const LetterRequestForm = () => {
   const location = useLocation();
   const grievanceId = location.state?.grievanceId || null;
   const navigate = useNavigate();
- 
+
   useEffect(() => {
     const initializePage = async () => {
       try {
         const token = sessionStorage.getItem('token');
         console.log(token);
         if (!token) {
-          navigate('/login'); 
+          navigate('/login');
         } else {
           const tokenResponse = await axios.post('http://localhost:8000/auth/getTokeninfo', { token });
           const { userId, role } = tokenResponse.data;
@@ -74,7 +75,7 @@ const LetterRequestForm = () => {
   }, [navigate, grievanceId]);
   useEffect(() => {
     console.log("Updated formData:", formData);
-  }, [formData]); 
+  }, [formData]);
 
   const fetchGrievanceData = async (grievanceId) => {
     try {
@@ -246,9 +247,23 @@ const LetterRequestForm = () => {
         });
         setSelectedMandal('');
         setSelectedVillage('');
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Record added successfully",
+          showConfirmButton: false,
+          timer: 1500
+        });
       })
       .catch((error) => {
         console.error("Error submitting form:", error);
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Mandal Not added",
+          showConfirmButton: false,
+          timer: 1500
+        });
       });
   };
 
@@ -321,20 +336,20 @@ const LetterRequestForm = () => {
 
   if (loading) {
     return (
-      <Container className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+      <Container className="d-flex justify-content-center align-items-center dm-sans-googleFont" style={{ height: '100vh' }}>
         <Spinner animation="border" variant="primary" />
       </Container>
     );
   } else if (!isAcAllocated) {
     return (
-      <Container className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+      <Container className="d-flex justify-content-center align-items-center dm-sans-googleFont" style={{ height: '100vh' }}>
         <h3>No allotment found for the employee</h3>
       </Container>
     );
   }
   else {
     return (
-      <Container>
+      <Container className='dm-sans-googleFont'>
         <Row className="my-2">
           <Col>
             <h6>Current Date: {currentDate}</h6>
@@ -582,11 +597,11 @@ const LetterRequestForm = () => {
             </Col>
           </Row>
           {renderCategoryForm()}
-          <Row>
+          <Row style={{textAlign:'center'}}>
             <Col>
-              <Button variant="primary" type="submit">
+              <button class="gem-c-button govuk-button" type="submit" style={{width:'30%',margin:'20px'}}>
                 {grievanceId ? "Update" : "Submit"}
-              </Button>
+              </button>
             </Col>
           </Row>
         </Form>

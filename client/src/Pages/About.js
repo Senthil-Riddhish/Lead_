@@ -9,31 +9,19 @@ const About = () => {
   const handleContentChange = (content) => setSelectedContent(content);
 
   return (
-    <Container className="text-center my-4">
+    <Container className="text-center my-4 dm-sans-googleFont">
       {/* Button Section */}
       <Row className="justify-content-center my-4">
         <Col xs="auto" className="d-flex justify-content-around">
-          <Button 
-            variant="primary" 
-            onClick={() => handleContentChange('ac')}
-            className="mx-2"
-          >
+          <button class="gem-c-button govuk-button" type="submit" onClick={() => handleContentChange('ac')}>
             Add AC
-          </Button>
-          <Button 
-            variant="secondary" 
-            onClick={() => handleContentChange('mandal')}
-            className="mx-2"
-          >
+          </button>
+          <button class="gem-c-button govuk-button" type="submit" onClick={() => handleContentChange('mandal')}>
             Add Mandal
-          </Button>
-          <Button 
-            variant="secondary" 
-            onClick={() => handleContentChange('allotment')}
-            className="mx-2"
-          >
+          </button>
+          <button class="gem-c-button govuk-button" type="submit" onClick={() => handleContentChange('allotment')}>
             Allotment
-          </Button>
+          </button>
         </Col>
       </Row>
 
@@ -42,13 +30,13 @@ const About = () => {
         <Col>
           <section className="content-section">
             {selectedContent === 'ac' && (
-              <AddAC/>
+              <AddAC />
             )}
             {selectedContent === 'mandal' && (
-              <Mandal/>
+              <Mandal />
             )}
             {selectedContent === 'allotment' && (
-              <AllotmentComponent/>
+              <AllotmentComponent />
             )}
           </section>
         </Col>

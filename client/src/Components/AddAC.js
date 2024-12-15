@@ -95,26 +95,26 @@ const AddAC = () => {
         cancelButtonColor: "#d33",
         confirmButtonText: "Yes, delete it!"
       });
-  
+
       if (result.isConfirmed) { // Proceed only if the user confirms
         try {
           // Log the current AC and state for debugging
           console.log("AC to delete:", ac);
           console.log("Current ACs:", acs);
-  
+
           // Send a DELETE request to the server
           const response = await axios.delete(`http://localhost:8000/allotment/delete-ac/${ac._id}`);
-  
+
           // If the deletion is successful
           if (response.status === 200) {
             console.log("Deletion successful:", response.data);
-  
+
             // Filter out the deleted AC from the `acs` array
             const updatedACs = acs.filter((item) => item._id !== ac._id);
-  
+
             // Update the state with the new AC array
             setAcs(updatedACs);
-  
+
             // Show success alert
             Swal.fire({
               title: "Deleted!",
@@ -133,7 +133,7 @@ const AddAC = () => {
           }
         } catch (error) {
           console.error("Error while deleting AC:", error);
-  
+
           // Show error alert
           Swal.fire({
             title: "Error!",
@@ -144,7 +144,7 @@ const AddAC = () => {
       }
     } catch (error) {
       console.error("Swal error or cancellation:", error);
-  
+
       // Show error alert if something goes wrong with Swal or user cancels
       Swal.fire({
         position: "top-end",
@@ -154,7 +154,7 @@ const AddAC = () => {
         timer: 1500
       });
     }
-  };  
+  };
 
   const handleUpdateAC = async () => {
     setLoading(true);
@@ -199,7 +199,10 @@ const AddAC = () => {
 
   return (
     <div className="p-4">
-      <h2>Add Assembly Constituency</h2>
+      <h2 style={{
+        fontFamily: 'CustomFont',
+        fontWeight: 900
+      }}>Add Assembly Constituency</h2>
       <Form onSubmit={handleAddAC}>
         <Row className="mb-3">
           <Col md={6}>
@@ -253,9 +256,9 @@ const AddAC = () => {
             </Form.Group>
           </Col>
         </Row>
-        <Button type="submit" variant="primary" className="mt-3">
+        <button class="gem-c-button govuk-button" style={{ width: '30%' }}>
           {loading ? <Spinner as="span" animation="border" size="sm" /> : 'Add AC'}
-        </Button>
+        </button>
       </Form>
 
       <h2 className="mt-5">All Assembly Constituencies</h2>
@@ -284,14 +287,10 @@ const AddAC = () => {
                 <td>{ac.PCId}</td>
                 <td>{ac.pocMobileNumber}</td>
                 <td>
-                  <Button variant="warning" onClick={() => openEditModal(ac)}>
-                    Update
-                  </Button>
+                  <button class="gem-c-button govuk-button" onClick={() => openEditModal(ac)}>Update</button>
                 </td>
                 <td>
-                  <Button variant="warning" onClick={() => openDeleteAC(ac)}>
-                    Delete
-                  </Button>
+                  <button class="gem-c-button govuk-button" onClick={() => openDeleteAC(ac)}>Delete</button>
                 </td>
               </tr>
             ))}

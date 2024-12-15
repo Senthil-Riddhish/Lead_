@@ -11,51 +11,101 @@ import Login from './Pages/Login'; // Import Login component
 import "./App.css";
 import { FaHome } from "react-icons/fa";
 import { RiGovernmentLine } from "react-icons/ri";
+import { BsRecordCircle } from "react-icons/bs";
 import { TiContacts } from "react-icons/ti";
+import { IoPersonAdd } from "react-icons/io5";
+import { SlCalender } from "react-icons/sl";
 import logo from "./Images/leadlogo.PNG";
+import { MdArrowForwardIos } from "react-icons/md"; // Right-facing arrow
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
-const Sidebar = ({ toggleSidebar }) => (
-  <div className="sidebar-container d-flex flex-column p-3" style={{ width: '100%', backgroundColor: 'white' }}>
+const Sidebar = ({ toggleSidebar, role }) => (
+  <div className="sidebar-container d-flex flex-column p-3 CustomFont" style={{
+    width: '100%',
+    backgroundColor: 'white',
+    fontFamily: 'CustomFont',
+    fontWeight: 900
+  }}>
     <div className="sidebar-header d-flex align-items-center mb-4">
-      <img src={logo} alt="Menu Icon" className="me-2" style={{ width: '100px', height: '50px' }} />
+      <img src={logo} alt="Menu Icon" className="me-2" style={{ width: '150px', height: '80px' }} />
     </div>
-    <Link to="/home" onClick={toggleSidebar} className="sidebar-link mb-3">
-      <FaHome className="me-2" />
-      Home
+    <Link to="/home" onClick={toggleSidebar} className="sidebar-link mb-3 d-flex align-items-center justify-content-between">
+      <div>
+        <FaHome className="me-2" />
+        Home
+      </div>
+      <MdArrowForwardIos />
     </Link>
-    <Link to="/about" onClick={toggleSidebar} className="sidebar-link mb-3">
-      <RiGovernmentLine className="me-2" />
-      Assembly Constitution
+    {!role &&
+      <Link to="/about" onClick={toggleSidebar} className="sidebar-link mb-3 d-flex align-items-center justify-content-between">
+        <div>
+          <RiGovernmentLine className="me-2" />
+          Assembly Constitution
+        </div>
+        <MdArrowForwardIos />
+      </Link>}
+    {!role &&
+      <Link to="/employee" onClick={toggleSidebar} className="sidebar-link mb-3 d-flex align-items-center justify-content-between">
+        <div>
+          <IoPersonAdd className="me-2" />
+          Employee Management
+        </div>
+        <MdArrowForwardIos />
+      </Link>}
+    <Link to="/grievances" onClick={toggleSidebar} className="sidebar-link mb-3 d-flex align-items-center justify-content-between">
+      <div>
+        <BsRecordCircle className="me-2" />
+        Grievances
+      </div>
+      <MdArrowForwardIos />
     </Link>
-    <Link to="/employee" onClick={toggleSidebar} className="sidebar-link mb-3">
-      <RiGovernmentLine className="me-2" />
-      Employee Management
+    <Link to="/hrplanner" onClick={toggleSidebar} className="sidebar-link mb-3 d-flex align-items-center justify-content-between">
+      <div>
+        <SlCalender className="me-2" />
+        Attendance Planner
+      </div>
+      <MdArrowForwardIos />
     </Link>
-    <Link to="/grievances" onClick={toggleSidebar} className="sidebar-link mb-3">
-      <TiContacts className="me-2" />
-      Grievances
-    </Link>
-    <Link to="/hrplanner" onClick={toggleSidebar} className="sidebar-link mb-3">
-      <TiContacts className="me-2" />
-      Attendance Planner
-    </Link>
-    <Link to="/allrecords" onClick={toggleSidebar} className="sidebar-link mb-3">
-      <TiContacts className="me-2" />
-      Records
+    <Link to="/allrecords" onClick={toggleSidebar} className="sidebar-link mb-3 d-flex align-items-center justify-content-between">
+      <div>
+        <TiContacts className="me-2" />
+        Records
+      </div>
+      <MdArrowForwardIos />
     </Link>
   </div>
 );
 
 const App = () => {
+  const [userInfo, setUserInfo] = useState({});
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = sessionStorage.getItem('token');
-    if (token) setIsAuthenticated(true);
-  }, []);
+    const initializePage = async () => {
+      try {
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+        } else {
+          if (token) setIsAuthenticated(true);
+          const tokenResponse = await axios.post(
+            'http://localhost:8000/auth/getTokeninfo',
+            { token }
+          );
+          const { userId, role } = tokenResponse.data;
+          setUserInfo({ userId, role });
+        }
+      } catch (error) {
+        console.error('Error initializing page:', error);
+        navigate('/login');
+      }
+    };
+
+    initializePage();
+  }, [navigate]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('token'); // Remove token from sessionStorage
@@ -86,16 +136,16 @@ const App = () => {
                 <Offcanvas.Title>Menu</Offcanvas.Title>
               </Offcanvas.Header>
               <Offcanvas.Body>
-                <Sidebar toggleSidebar={() => setShowSidebar(false)} />
+                <Sidebar toggleSidebar={() => setShowSidebar(false)} role={userInfo.role} />
               </Offcanvas.Body>
             </Offcanvas>
 
             <Col md={3} lg={2} className="p-0 d-none d-md-block sidebar">
-              <Sidebar />
+              <Sidebar role={userInfo.role} />
             </Col>
 
             <Col xs={12} md={9} lg={10} className="p-0">
-              <Navbar className="bg-body-tertiary">
+              <Navbar>
                 <Container>
                   <Navbar.Collapse className="justify-content-end">
                     <Button variant="outline-success" onClick={handleLogout}>Logout</Button>
@@ -104,11 +154,11 @@ const App = () => {
               </Navbar>
               <Routes>
                 <Route path="/home" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/employee" element={<EmployeeManagement />} />
+                {!userInfo.role && <Route path="/about" element={<About />} />}
+                {!userInfo.role && <Route path="/employee" element={<EmployeeManagement />} />}
                 <Route path="/grievances" element={<Grievances />} />
-                <Route path="/hrplanner" element={<AttendancePlanner/>}/>
-                <Route path='/allrecords' element={<GrievanceTable />} />
+                <Route path="/hrplanner" element={<AttendancePlanner />} />
+                <Route path="/allrecords" element={<GrievanceTable />} />
                 <Route path="*" element={<Navigate to="/home" replace />} />
               </Routes>
             </Col>

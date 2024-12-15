@@ -13,7 +13,7 @@ const CreateEmployee = () => {
     panId: '',
     aadharId: '',
     scores: {
-      xth: '',  
+      xth: '',
       xiith: '',
       bachelors: '',
       masters: '',
@@ -81,7 +81,7 @@ const CreateEmployee = () => {
   return (
     <Container>
       <h2>Create Employee</h2>
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} style={{textAlign:'center'}}>
         <Row className="mb-3">
           <Col>
             <Form.Group controlId="formName">
@@ -274,7 +274,7 @@ const CreateEmployee = () => {
             </Form.Group>
           </Col>
         </Row>
-        <Button type="submit" variant="primary">Create Employee</Button>
+        <button class="gem-c-button govuk-button" type="submit" style={{ width: '30%' }}>Register Employee</button>
       </Form>
     </Container>
   );

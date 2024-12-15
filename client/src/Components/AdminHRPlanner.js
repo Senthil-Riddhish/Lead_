@@ -12,6 +12,7 @@ const AdminLeaveApproval = () => {
     const fetchLeaveHistory = async () => {
       try {
         const response = await axios.get('http://localhost:8000/employee/getAllHistoryOfAllEmployees');
+        console.log(response.data);
         setNotApprovedLeaves(response.data.notApprovedLeaves);
         setApprovedLeaves(response.data.approvedLeaves);
         setRejectedLeaves(response.data.rejectedLeaves);
@@ -49,12 +50,16 @@ const AdminLeaveApproval = () => {
   };
 
   return (
-    <div className="admin-leave-approval-container">
+    <div className="admin-leave-approval-container" style={{
+      fontFamily: 'CustomFont',
+      fontWeight: 900,
+      textAlign:'left'
+    }}>
       <h1 className="title">Admin Leave Approval</h1>
 
       {error && <div className="error-message">{error}</div>}
 
-      <div className="section">
+      <div className="section" style={{textAlign:'left'}}>
         <h2>Leaves Not Yet Approved</h2>
         {notApprovedLeaves.length > 0 ? (
           <table className="leave-table">
@@ -70,7 +75,7 @@ const AdminLeaveApproval = () => {
             <tbody>
               {notApprovedLeaves.map((leave) => (
                 <tr key={leave._id}>
-                  <td>{leave.date}</td>
+                  <td>{new Date(leave.date).toLocaleDateString('en-GB')}</td>
                   <td>{leave.type}</td>
                   <td>{leave.purpose}</td>
                   <td>{leave.employeeName}</td>
@@ -102,7 +107,7 @@ const AdminLeaveApproval = () => {
             <tbody>
               {approvedLeaves.map((leave) => (
                 <tr key={leave._id}>
-                  <td>{leave.date}</td>
+                  <td>{new Date(leave.date).toLocaleDateString('en-GB')}</td>
                   <td>{leave.type}</td>
                   <td>{leave.purpose}</td>
                   <td>{leave.employeeName}</td>
@@ -130,9 +135,9 @@ const AdminLeaveApproval = () => {
             <tbody>
               {rejectedLeaves.map((leave) => (
                 <tr key={leave._id}>
-                  <td>{leave.date}</td>
-                  <td>{leave.type}</td>
-                  <td>{leave.purpose}</td>
+                  <td>{new Date(leave._doc.date).toLocaleDateString('en-GB')}</td>
+                  <td>{leave._doc.type}</td>
+                  <td>{leave._doc.purpose}</td>
                   <td>{leave.employeeName}</td>
                 </tr>
               ))}

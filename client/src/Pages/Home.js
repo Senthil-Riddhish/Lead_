@@ -91,7 +91,7 @@ const Home = () => {
   
 
   return (
-    <div style={{ width: '80%', margin: '0 auto', marginTop: '20px' }}>
+    <div style={{ width: '80%', margin: '0 auto', marginTop: '20px' }} className='dm-sans-googleFont'>
       <h1>Welcome, {
         userInfo.role ? profile.name : `${profile.firstname} ${profile.lastname}`
       }</h1>

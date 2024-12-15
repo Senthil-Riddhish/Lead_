@@ -22,30 +22,30 @@ html, body {
 }
 .sidebar-container {
   background-color: white;
-  color: orange;
+  color: black;
   height: 100vh;
 }
 
 .sidebar-header {
-  color: orange;
+  color: black;
   font-size: 1.25rem;
 }
 
 .menu-icon {
   font-size: 1.5rem;
-  color: orange;
+  color: black;
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
-  color: orange;
+  color: black;
   text-decoration: none;
   font-size: 1rem;
 }
 
 .sidebar-link:hover {
-  color: #ff8c00; /* Darker orange on hover */
+  color: orange; /* Darker orange on hover */
 }
 
 .sidebar-link img {
@@ -55,3 +55,4 @@ html, body {
 .sidebar-link:focus, .sidebar-link:active, .sidebar-link:hover {
   text-decoration: none;
 }
+

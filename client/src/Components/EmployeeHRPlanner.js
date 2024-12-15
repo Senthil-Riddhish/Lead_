@@ -79,7 +79,7 @@ const LeaveManagement = ({ employeeId }) => {
     };
 
     return (
-        <div className="leave-management-container">
+        <div className="leave-management-container dm-sans-googleFont">
             {/* Left Section: Apply Leave */}
             <div className="apply-leave">
                 <h2>Apply for Leave</h2>

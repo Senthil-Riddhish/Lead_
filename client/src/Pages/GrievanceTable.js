@@ -204,7 +204,7 @@ const GrievanceTable = () => {
 
   if (loading) {
     return (
-      <Container className="text-center mt-5">
+      <Container className="text-center mt-5 dm-sans-googleFont">
         <Spinner animation="border" variant="primary" />
         <p>Loading...</p>
       </Container>
@@ -213,7 +213,7 @@ const GrievanceTable = () => {
 
   if (error) {
     return (
-      <Container className="mt-5">
+      <Container className="mt-5 dm-sans-googleFont">
         <Alert variant="danger">
           Error: {error}
         </Alert>
@@ -339,7 +339,7 @@ const GrievanceTable = () => {
 
 
   return (
-    <Container className="mt-5">
+    <Container className="mt-5 dm-sans-googleFont">
       <h2>Employee Grievance Records</h2>
       {tokenInfo.role === 0 ? (
         <Row className="mb-3">
