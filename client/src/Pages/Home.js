@@ -1,18 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from 'recharts';
+import Chart from 'react-apexcharts';
+import { Container, Row, Col } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
 
@@ -36,16 +27,15 @@ const Home = () => {
           );
           const { userId, role } = tokenResponse.data;
           setUserInfo({ userId, role });
-          // Fetch profile details using userId
           const profileResponse = await axios.get(`http://localhost:8000/employee/profile/${userId}`);
           setProfile(profileResponse.data);
-          console.log(profileResponse);
 
-          // Fetch consolidated data based on user role
           const response = await axios.get(
             `http://localhost:8000/grievances/consolidated-data/${userId}/${role}`
           );
           setData(response.data.data);
+          console.log(response.data.data);
+
         }
       } catch (error) {
         console.error('Error initializing page:', error);
@@ -59,138 +49,135 @@ const Home = () => {
   }, [navigate]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="loading-screen">Loading...</div>;
   }
 
   if (!data) {
     return <div>Error loading data!</div>;
   }
 
-  // Extract data for the table and charts
-  const grievanceCategories = data.grievanceCategories || {};
-  const grievanceLabels = Object.keys(grievanceCategories);
+  const grievanceCategories = data?.grievanceCategories || {};
+  const grievanceLabels = Object.keys(grievanceCategories || {});
   const grievanceCounts = grievanceLabels.map((category) => ({
     category,
-    count: grievanceCategories[category].length,
+    count: grievanceCategories[category]?.length || 0,
   }));
 
   const totalACs = data.allAC?.length || 0;
   const totalEmployees = data.employees?.length || 0;
-
-  // Calculate total records
-  const totalRecords = grievanceLabels.reduce(
-    (acc, category) => acc + grievanceCategories[category].length,
+  const totalRecords = grievanceCounts.reduce(
+    (acc, { count }) => acc + (count || 0),
     0
   );
 
-  // Data for Pie and Bar charts
-  const pieChartData = grievanceCounts.map(({ category, count }) => ({
-    name: category,
-    value: count,
-  }));
-  
+  const pieChartOptions = {
+    chart: {
+      type: 'pie',
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+      },
+    },
+    labels: grievanceCounts.map((item) => item.category),
+    colors: COLORS,
+    legend: {
+      position: 'bottom',
+    },
+  };
+
+  const pieChartSeries = grievanceCounts.map((item) => item.count);
+
+  const barChartOptions = {
+    chart: {
+      type: 'bar',
+      toolbar: { show: false },
+      dropShadow: {
+        enabled: true,
+        top: 2,
+        left: 2,
+        blur: 3,
+        color: '#000',
+        opacity: 0.4,
+      },
+    },
+    xaxis: {
+      categories: grievanceCounts.map((item) => item.category),
+      labels: {
+        rotate: -45, // Rotate labels to a 45-degree angle
+        style: {
+          fontSize: '10px', // Reduce font size for labels
+        },
+      },
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: '45%',
+        endingShape: 'rounded',
+      },
+    },
+    colors: COLORS,
+    dataLabels: {
+      enabled: false,
+    },
+  };  
+
+  const barChartSeries = [
+    {
+      name: 'Grievances',
+      data: grievanceCounts.map((item) => item.count),
+    },
+  ];
 
   return (
-    <div style={{ width: '80%', margin: '0 auto', marginTop: '20px' }} className='dm-sans-googleFont'>
-      <h1>Welcome, {
-        userInfo.role ? profile.name : `${profile.firstname} ${profile.lastname}`
-      }</h1>
+    <Container>
+      <h1 className="text-center my-4">
+        Welcome, {userInfo.role ? profile.name : `${profile.firstname} ${profile.lastname}`}
+      </h1>
 
-      {/* First row: Charts */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-        {/* Pie Chart */}
-        <div style={{ flex: 1, marginRight: '20px' }}>
-          <h3>Grievance Distribution</h3>
-          <PieChart width={400} height={400}>
-            <Pie
-              data={pieChartData}
-              cx="50%"
-              cy="50%"
-              outerRadius={120}
-              fill="#8884d8"
-              dataKey="value"
-              label
-            >
-              {pieChartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </div>
+      <Row className="mb-4">
+        {/* Charts in one row */}
+        <Col xs={12} md={6} className="mb-4">
+          <div className="chart-card">
+            <h3>Grievance Distribution (Pie Chart)</h3>
+            <Chart options={pieChartOptions} series={pieChartSeries} type="pie" width="100%" height={300} />
+          </div>
+        </Col>
+        <Col xs={12} md={6}>
+          <div className="chart-card">
+            <h3>Grievance Counts by Category (Bar Chart)</h3>
+            <Chart options={barChartOptions} series={barChartSeries} type="bar" width="100%" height={300} />
+          </div>
+        </Col>
+      </Row>
+      <Row className="mb-4">
+        <Col xs={12} md={6} className="mb-4">
+          <div className="card shadow-lg p-3  text-center">
+            <h3 className="text-center">Total Records</h3>
+            <div className="card-value">{totalRecords}</div>
+          </div>
+        </Col>
+        <Col xs={12} md={6}>
+          <div className="card shadow-lg p-3  text-center">
+            <h3 className="text-center">Total Employees</h3>
+            <div className="card-value">{totalEmployees}</div>
+          </div>
+        </Col>
+      </Row>
 
-        {/* Bar Chart */}
-        <div style={{ flex: 1, marginLeft: '20px' }}>
-          <h3>Grievance Counts by Category</h3>
-          <BarChart width={500} height={400} data={pieChartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="value" fill="#82ca9d" />
-          </BarChart>
-        </div>
-      </div>
-
-      {/* Second row: Tables */}
-      <div>
-        {/* Grievance Table */}
-        <h3>Grievance Count Details</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-          <thead>
-            <tr>
-              <th style={tableHeaderStyle}>Category</th>
-              <th style={tableHeaderStyle}>Count</th>
-            </tr>
-          </thead>
-          <tbody>
-            {grievanceCounts.map(({ category, count }, index) => (
-              <tr key={index}>
-                <td style={tableCellStyle}>{category}</td>
-                <td style={tableCellStyle}>{count}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Summary Table */}
-        <h3>Summary</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              {userInfo.role !== 1 && <th style={tableHeaderStyle}>Total ACs</th>}
-              {userInfo.role !== 1 && <th style={tableHeaderStyle}>Total Employees</th>}
-              <th style={tableHeaderStyle}>Total Records</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              {userInfo.role !== 1 && <td style={tableCellStyle}>{totalACs}</td>}
-              {userInfo.role !== 1 && <td style={tableCellStyle}>{totalEmployees}</td>}
-              <td style={tableCellStyle}>{totalRecords}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <Row>
+        {grievanceCounts.map(({ category, count }, index) => (
+          <Col xs={12} md={4} key={index} className="mb-4">
+            <div className="card shadow-lg p-3 text-center">
+              <h4>{category}</h4>
+              <div className="card-value">{count}</div>
+            </div>
+          </Col>
+        ))}
+      </Row>
+    </Container>
   );
-};
-
-// Table styles
-const tableHeaderStyle = {
-  backgroundColor: '#f4f4f4',
-  border: '1px solid #ddd',
-  padding: '10px',
-  textAlign: 'left',
-  fontWeight: 'bold',
-};
-
-const tableCellStyle = {
-  border: '1px solid #ddd',
-  padding: '10px',
-  textAlign: 'left',
 };
 
 export default Home;

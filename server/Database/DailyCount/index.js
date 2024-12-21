@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const dailyCountSchema = new mongoose.Schema({
   date: {
-    type: Date,
+    type: String,
     required: true,
     unique: true, // Ensure each date is unique
   },

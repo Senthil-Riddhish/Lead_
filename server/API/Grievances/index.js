@@ -1,14 +1,35 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import { LetterRequest, EmployeeGrievancesTrack, AssignedwithTrackingDocument,EmployeeModel, AC } from "../../Database/allModels" // Assuming the model is saved here
+import date from 'date-and-time';
+import { LetterRequest, EmployeeGrievancesTrack, DailyCount, AssignedwithTrackingDocument, EmployeeModel, AC } from "../../Database/allModels" // Assuming the model is saved here
 const router = express.Router();
 /**
  * Route to add a new request
  * POST /api/requests/:category
  */
 // POST endpoint to add a new request for a specific category and track it
+function getShortForm(fullform) {
+  switch (fullform) {
+    case 'GrievanceRef':
+      return 'GRF'
+    case 'CMRF':
+      return 'CMRF'
+    case 'JOBS':
+      return 'JBS'
+    case 'DEVELOPMENT':
+      return 'DVLP'
+    case 'Transfer':
+      return 'TNS'
+    case 'Others':
+      return 'ORS'
+    default:
+      return '';
+  }
+}
+
 router.post('/:employeeId/:category/:role', async (req, res) => {
   const { employeeId, category, role } = req.params;
+  const { aadharId, phoneNumber, token } = req.body; // Extract values from request body
 
   // Validate parameters
   if (!mongoose.Types.ObjectId.isValid(employeeId)) {
@@ -21,6 +42,17 @@ router.post('/:employeeId/:category/:role', async (req, res) => {
   }
 
   try {
+    // Check for uniqueness of aadharId, phoneNumber, and token
+    const existingRecord = await LetterRequest.findOne({
+      $or: [{ aadharId }, { phoneNumber }, { token }],
+    });
+
+    if (existingRecord) {
+      return res.status(400).json({
+        message: 'A document with the same aadharId, phoneNumber, or token already exists',
+      });
+    }
+
     // Create a new LetterRequest instance
     const letterRequest = new LetterRequest(req.body);
     const savedLetterRequest = await letterRequest.save();
@@ -32,7 +64,7 @@ router.post('/:employeeId/:category/:role', async (req, res) => {
       if (!grievanceTracking) {
         grievanceTracking = new EmployeeGrievancesTrack({
           employeeId,
-          grievanceCategories: {}
+          grievanceCategories: {},
         });
       }
 
@@ -46,12 +78,15 @@ router.post('/:employeeId/:category/:role', async (req, res) => {
       // Create and save AssignedwithTrackingDocument
       const assignWithTrackingDocument = new AssignedwithTrackingDocument({
         referenceGrievanceDocument: savedLetterRequest._id,
-        referenceTrackingDocument: grievanceTracking._id
+        referenceTrackingDocument: grievanceTracking._id,
       });
       await assignWithTrackingDocument.save();
     }
 
-    res.status(201).json({ message: 'Letter request added successfully', letterRequest: savedLetterRequest });
+    res.status(201).json({
+      message: 'Letter request added successfully',
+      letterRequest: savedLetterRequest,
+    });
   } catch (error) {
     console.error('Error adding letter request:', error);
     res.status(500).json({ message: 'Server error', error });
@@ -74,7 +109,7 @@ router.put('/:id', async (req, res) => {
     if (!alreadyStoredDocument) {
       return res.status(404).json({ message: "Document not Found" });
     }
-    855
+
     // Check if `acId` has changed
     if (alreadyStoredDocument.acId != req.body.acId) {
       // Find the AssignedwithTrackingDocument associated with this LetterRequest
@@ -138,13 +173,17 @@ router.put('/:id', async (req, res) => {
         }
       }
     }
-    const [, , count] = req.body.token.split('/'); // Extract count from the token
+    const [acname, pcid, , , count] = req.body.token.split('/'); // Extract count from the token
     // Generate the current date in the format YYYY-MM-DD
-    const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split('T')[0];
+    // const currentDate = new Date();
+    // const formattedDate = currentDate.toISOString().split('T')[0];
+    const now = new Date();
+    var dates = date.format(now, 'YYYY/MM/DD');    // => '2015/01/02 23:14:05' 
 
     // Generate the updated token with the new category and current date
-    const updatedToken = `${req.body.category}/${formattedDate}/${count}`;
+    const getshortForm = getShortForm(req.body.category);
+
+    const updatedToken = `${acname}/${pcid}/${getshortForm}/${dates.replace(/\//g, '')}/${count}`;
     req.body.token = updatedToken;
     // Replace the old document with the new data
     await LetterRequest.replaceOne({ _id: id }, req.body);
@@ -194,8 +233,8 @@ router.get('/getdocuments/:employeeId/:role', async (req, res) => {
       // Default functionality for other roles
       const employeeGrievances1 = await EmployeeGrievancesTrack.findOne({ employeeId })
       console.log(employeeGrievances1);
-      if(!employeeGrievances1) {
-        return res.status(200).json({grievanceCategories: {}})
+      if (!employeeGrievances1) {
+        return res.status(200).json({ grievanceCategories: {} })
       }
 
       const employeeGrievances = await EmployeeGrievancesTrack.findOne({ employeeId })
@@ -209,7 +248,7 @@ router.get('/getdocuments/:employeeId/:role', async (req, res) => {
       if (!employeeGrievances) {
         return res.status(404).json({ message: 'Grievances not found for this employee' });
       }
-      console.log("employeeGrievances : ",employeeGrievances);
+      console.log("employeeGrievances : ", employeeGrievances);
       res.json(employeeGrievances);
     }
   } catch (error) {
@@ -251,27 +290,35 @@ router.get('/delete-grievance/:id', async (req, res) => {
       return res.status(404).json({ message: 'Grievance not found' });
     }
 
+    // Extract the date from the token
+    const token = grievanceDoc.token;
+    const splits = token.split('/');
+    const rawDate = splits[3]; // Example: 20241221
+    const formattedDate = `${rawDate.slice(0, 4)}/${rawDate.slice(4, 6)}/${rawDate.slice(6, 8)}`; // Convert to YYYY/MM/DD
+
+    // Step 2: Find and decrement the count in DailyCount
+    const dailyCountDoc = await DailyCount.findOneAndUpdate(
+      { date: formattedDate },
+      { $inc: { count: -1 } }, // Decrease count by 1
+      { new: true } // Return the updated document
+    );
+    console.log(dailyCountDoc);
+
     // Step 2: Find and delete the related document in AssignedwithTrackingDocument
     const trackingDoc = await AssignedwithTrackingDocument.findOneAndDelete({ referenceGrievanceDocument: id });
-    if (!trackingDoc) {
-      return res.status(404).json({ message: 'Assigned tracking document not found' });
-    }
+    if (trackingDoc) {
+      // Step 3: Find the EmployeeGrievancesTrack document using referenceTrackingDocument
+      const employeeTrackDoc = await EmployeeGrievancesTrack.findById(trackingDoc.referenceTrackingDocument);
+      // Step 4: Remove the grievance ID from the corresponding grievance category
+      const { category } = grievanceDoc; // Get category from the deleted grievance
+      if (employeeTrackDoc.grievanceCategories[category]) {
+        employeeTrackDoc.grievanceCategories[category] = employeeTrackDoc.grievanceCategories[category].filter(
+          (grievanceId) => grievanceId.toString() !== id
+        );
 
-    // Step 3: Find the EmployeeGrievancesTrack document using referenceTrackingDocument
-    const employeeTrackDoc = await EmployeeGrievancesTrack.findById(trackingDoc.referenceTrackingDocument);
-    if (!employeeTrackDoc) {
-      return res.status(404).json({ message: 'Employee grievance track document not found' });
-    }
-
-    // Step 4: Remove the grievance ID from the corresponding grievance category
-    const { category } = grievanceDoc; // Get category from the deleted grievance
-    if (employeeTrackDoc.grievanceCategories[category]) {
-      employeeTrackDoc.grievanceCategories[category] = employeeTrackDoc.grievanceCategories[category].filter(
-        (grievanceId) => grievanceId.toString() !== id
-      );
-
-      // Save the updated EmployeeGrievancesTrack document
-      await employeeTrackDoc.save();
+        // Save the updated EmployeeGrievancesTrack document
+        await employeeTrackDoc.save();
+      }
     }
 
     return res.status(200).json({ message: 'Grievance and related data deleted successfully' });

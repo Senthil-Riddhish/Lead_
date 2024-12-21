@@ -207,7 +207,7 @@ export const validateForm = (formData) => {
                 errors.push("Please enter Development Issue")
             }
             if(!formData.development.letterIssue) {
-                errors.push("Please enter Development LetterIssue")
+                errors.push("Please select the LetterIssue Yes/No")
             }
         }
     }

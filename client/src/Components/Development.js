@@ -16,7 +16,7 @@ const Development = ({
     userRole,
     acData,
     assignedAc,
-    grievanceId=''
+    grievanceId = ''
 }) => {
     const [mandals, setMandals] = useState([]);
     const [villages, setVillages] = useState([]);
@@ -25,39 +25,39 @@ const Development = ({
 
     useEffect(() => {
         if (assignedAc) {
-          console.log(acData);
-          const selectedAcMandals = acData[assignedAc]?.mandals || {};
-          setMandals(Object.entries(selectedAcMandals).map(([mandalId, mandalInfo]) => ({
-            id: mandalId,
-            name: mandalInfo.name,
-            villages: mandalInfo.village || []
-          })));
-          console.log(mandals);
-          if (("development" in formData) && ("mandal" in formData.development)) {
-            const filteredVillage = mandals.filter(ind => ind.id==formData.development.mandal);
-            console.log(filteredVillage, formData.development.mandal);
-            if (filteredVillage.length > 0) {
-              setVillages(filteredVillage[0].villages);
-              console.log(villages.some((element) => element._id ==formData.development.village),villages);
-              if ((filteredVillage[0].villages).some((element) => element._id == formData.development.village)) {
-                console.log("true")
-                console.log(formData.development.mandal);
-                setmandalselectedDropdown(formData.development.mandal)
-                setvillageselectedDropdown(formData.development.village)
-              }
+            console.log(acData);
+            const selectedAcMandals = acData[assignedAc]?.mandals || {};
+            setMandals(Object.entries(selectedAcMandals).map(([mandalId, mandalInfo]) => ({
+                id: mandalId,
+                name: mandalInfo.name,
+                villages: mandalInfo.village || []
+            })));
+            console.log(mandals);
+            if (("development" in formData) && ("mandal" in formData.development)) {
+                const filteredVillage = mandals.filter(ind => ind.id == formData.development.mandal);
+                console.log(filteredVillage, formData.development.mandal);
+                if (filteredVillage.length > 0) {
+                    setVillages(filteredVillage[0].villages);
+                    console.log(villages.some((element) => element._id == formData.development.village), villages);
+                    if ((filteredVillage[0].villages).some((element) => element._id == formData.development.village)) {
+                        console.log("true")
+                        console.log(formData.development.mandal);
+                        setmandalselectedDropdown(formData.development.mandal)
+                        setvillageselectedDropdown(formData.development.village)
+                    }
+                } else {
+                    setvillageselectedDropdown('');
+                    setmandalselectedDropdown('');
+                }
             } else {
-              setvillageselectedDropdown('');
-              setmandalselectedDropdown('');
+                setvillageselectedDropdown('');
+                setmandalselectedDropdown('');
             }
-          } else {
+        } else {
             setvillageselectedDropdown('');
             setmandalselectedDropdown('');
-          }
-        } else {
-          setvillageselectedDropdown('');
-          setmandalselectedDropdown('');
         }
-      }, [assignedAc, acData, userRole]);
+    }, [assignedAc, acData, userRole]);
 
     const handleMandalChange = (event) => {
         const mandalId = event.target.value;
@@ -198,7 +198,14 @@ const Development = ({
                 <Col md={12}>
                     <Form.Group controlId="letter-issue">
                         <Form.Label>Letter Issue</Form.Label>
-                        <Form.Control as="select" value={formData.development?.letterIssue ? "yes" : "no"} onChange={handleLetterIssueChange}>
+                        <Form.Control
+                            as="select"
+                            value={formData.development?.letterIssue === undefined ? "" : formData.development.letterIssue ? "yes" : "no"}
+                            onChange={handleLetterIssueChange}
+                        >
+                            <option value="" disabled>
+                                Select an option
+                            </option>
                             <option value="yes">Yes</option>
                             <option value="no">No</option>
                         </Form.Control>

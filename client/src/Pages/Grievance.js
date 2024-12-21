@@ -202,6 +202,22 @@ const LetterRequestForm = () => {
       [name]: value
     }));
   };
+  const handleAadharInputChange = (e) => {
+    let { value } = e.target;
+
+    // Remove any non-digit characters
+    value = value.replace(/\D/g, '');
+
+    // Format the value as xxxx-xxxx-xxxx
+    if (value.length > 4) value = value.slice(0, 4) + '-' + value.slice(4);
+    if (value.length > 9) value = value.slice(0, 9) + '-' + value.slice(9);
+
+    // Update the form data
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      aadharId: value,
+    }));
+  };
 
   const handleRelationChange = (e) => {
     setFormData({ ...formData, relation: e.target.value });
@@ -250,7 +266,7 @@ const LetterRequestForm = () => {
         Swal.fire({
           position: "top-end",
           icon: "success",
-          title: "Record added successfully",
+          title: `${grievanceId ? "Record Updated Successfully" : "Record Added Successfully"}`,
           showConfirmButton: false,
           timer: 1500
         });
@@ -259,8 +275,8 @@ const LetterRequestForm = () => {
         console.error("Error submitting form:", error);
         Swal.fire({
           position: "top-end",
-          icon: "success",
-          title: "Mandal Not added",
+          icon: "error",
+          title: `${error.response.data.message}`,
           showConfirmButton: false,
           timer: 1500
         });
@@ -456,7 +472,8 @@ const LetterRequestForm = () => {
                   type="text"
                   name="aadharId"
                   value={formData.aadharId}
-                  onChange={handleInputChange}
+                  onChange={handleAadharInputChange}
+                  maxLength="14" // Limit input length to account for hyphens
                   required
                 />
               </Form.Group>
@@ -597,9 +614,9 @@ const LetterRequestForm = () => {
             </Col>
           </Row>
           {renderCategoryForm()}
-          <Row style={{textAlign:'center'}}>
+          <Row style={{ textAlign: 'center' }}>
             <Col>
-              <button class="gem-c-button govuk-button" type="submit" style={{width:'30%',margin:'20px'}}>
+              <button class="gem-c-button govuk-button" type="submit" style={{ width: '30%', margin: '20px' }}>
                 {grievanceId ? "Update" : "Submit"}
               </button>
             </Col>

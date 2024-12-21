@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
+import AC from "../AssemblyConstituency";
 import DailyCount from '../DailyCount';
+import date from 'date-and-time';
 // Sub-schema for GrievanceRef and Others (Categories 1 & 6)
 const grievanceRefSchema = new mongoose.Schema({
   subject: { type: String, required: true },
@@ -103,25 +105,37 @@ const letterRequestSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Pre-save middleware for updating daily count and assigning token
+// Pre-save middleware
 letterRequestSchema.pre('save', async function (next) {
+  console.log("pre save function");
   try {
-    const currentDate = new Date();
-    const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0)); // Get start of the day
+    // Get the global current date in the desired format
+    const now = new Date();
+    const formattedNow = date.format(now, 'YYYY/MM/DD'); // Format as YYYY/MM/DD for storing
 
     // Update the daily count for the current day or create a new one
     const dailyCountDoc = await DailyCount.findOneAndUpdate(
-      { date: startOfDay },
+      { date: formattedNow }, // Use the formatted global date as the identifier
       { $inc: { count: 1 } }, // Increment count
       { new: true, upsert: true, setDefaultsOnInsert: true } // Create document if it doesn't exist
     );
 
     // Use the updated count to generate the token
     const countForDay = dailyCountDoc.count; // Get the updated count
-    const formattedDate = startOfDay.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+    const formattedCount = countForDay < 10 ? `0${countForDay}` : `${countForDay}`;
 
+    const getacName = await AC.findById(this.acId);
+    if (!getacName) {
+      throw new Error('AC not found for the given ID');
+    }
+
+    const getshortForm = getShortForm(this.category);
+    if (!getshortForm) {
+      throw new Error('Category short form could not be determined');
+    }
     // Assign the token based on the formatted date and count
-    this.token = `${this.category}/${formattedDate}/${countForDay}`;
-    console.log(this.token);
+    this.token = `${getacName.name}/${getacName.PCId}/${getshortForm}/${formattedNow.replace(/\//g, '')}/${formattedCount}`;
+    console.log(this.token, getacName.name, getacName.PCId, formattedCount, formattedNow.replace(/\//g, ''));
     next(); // Proceed with saving the document
   } catch (error) {
     console.error('Error in pre-save middleware:', error);
@@ -129,6 +143,24 @@ letterRequestSchema.pre('save', async function (next) {
   }
 });
 
+function getShortForm(fullform) {
+  switch(fullform){
+    case 'GrievanceRef':
+      return 'GRF'
+    case 'CMRF':
+      return 'CMRF'
+    case 'JOBS':
+      return 'JBS' 
+    case 'DEVELOPMENT':
+      return 'DVLP'
+    case 'Transfer':
+      return 'TNS'
+    case 'Others':
+      return 'ORS'
+    default:
+      return '';
+  }
+}
 // Create the model
 const LetterRequest = mongoose.model('LetterRequest', letterRequestSchema);
 

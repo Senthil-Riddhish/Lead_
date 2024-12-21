@@ -1,0 +1,59 @@
+.dashboard-container {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.responsive-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Default: single column */
+    gap: 20px;
+    /* Spacing between cards */
+}
+
+@media (min-width: 768px) {
+    .responsive-grid {
+        grid-template-columns: repeat(2, 1fr);
+        /* Two columns for larger screens */
+    }
+}
+
+.chart-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #f3f3f3, #ffffff);
+    box-shadow: 10px 10px 20px #d1d1d1, -10px -10px 20px #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 15px 15px 30px #d1d1d1, -15px -15px 30px #ffffff;
+}
+
+.card-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #0088FE;
+}
+
+.text-center {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.loading-screen {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 50px;
+}

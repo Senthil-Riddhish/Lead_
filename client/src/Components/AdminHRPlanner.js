@@ -42,7 +42,13 @@ const AdminLeaveApproval = () => {
       await axios.put(`http://localhost:8000/employee/reject-leave/${leaveId}/${employeeId}`);
       const rejectedLeave = notApprovedLeaves.find(leave => leave._id === leaveId);
       setNotApprovedLeaves(notApprovedLeaves.filter(leave => leave._id !== leaveId));
-      setRejectedLeaves([...rejectedLeaves, { ...rejectedLeave, approved: 'REJECTED' }]);
+      setRejectedLeaves([...rejectedLeaves, { ...rejectedLeave, approved: 'REJECTED',
+        _doc: {
+          date: rejectedLeave.date,
+          type: rejectedLeave.type,
+          purpose: rejectedLeave.purpose
+        }
+       }]);
     } catch (error) {
       setError('Error rejecting leave. Please try again.');
       console.error('Error rejecting leave:', error);
