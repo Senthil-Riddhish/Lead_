@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Container, Row, Col, Form, Button, Alert, ListGroup } from 'react-bootstrap';
 import './LeaveManagement.css';
 
 const LeaveManagement = ({ employeeId }) => {
@@ -77,111 +78,136 @@ const LeaveManagement = ({ employeeId }) => {
             setSuccess('');
         }
     };
-
     return (
-        <div className="leave-management-container dm-sans-googleFont">
-            {/* Left Section: Apply Leave */}
-            <div className="apply-leave">
-                <h2>Apply for Leave</h2>
-                <form onSubmit={handleApplyLeave}>
-                    <div className="form-group">
-                        <label>Date</label>
-                        <input
-                            type="date"
-                            value={leaveDate}
-                            onChange={(e) => setLeaveDate(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Leave Type</label>
-                        <select value={leaveType} onChange={(e) => setLeaveType(e.target.value)} required>
-                            <option value="sick">Sick Leave</option>
-                            <option value="casual">Casual Leave</option>
-                            <option value="extra">Extra Leave</option>
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label>Purpose</label>
-                        <textarea
-                            value={purpose}
-                            onChange={(e) => setPurpose(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <button type="submit" className="submit-button">Apply Leave</button>
-                </form>
-                {success && <p className="success-message">{success}</p>}
-                {error && <p className="error-message">{error}</p>}
-            </div>
+        <Container className="leave-management-container">
+            <Row>
+                {/* Left Section: Apply Leave */}
+                <Col md={6} className="apply-leave">
+                    <h2>Apply for Leave</h2>
+                    <Form onSubmit={handleApplyLeave}>
+                        <Form.Group controlId="leaveDate">
+                            <Form.Label>Date</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={leaveDate}
+                                onChange={(e) => setLeaveDate(e.target.value)}
+                                required
+                            />
+                        </Form.Group>
 
-            {/* Right Section: Leave Data */}
-            <div className="leave-data">
-                <h2>Leave Data</h2>
-                {leaveData.length > 0 ? (
-                    <table className="leave-table">
-                        <thead>
-                            <tr>
-                                <th>Month</th>
-                                <th>Sick Leave</th>
-                                <th>Casual Leave</th>
-                                <th>Total Leave Left</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {leaveData.map((data) => (
-                                <tr key={`${data.month}-${data.year}`}>
-                                    <td>{data.month}</td>
-                                    <td>{data.sickLeave}</td>
-                                    <td>{data.casualLeave}</td>
-                                    <td>{data.totalLeaveLeft}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <p className="empty-message">No leave data available</p>
-                )}
-                <h3>Extra Leaves: {extraLeaves}</h3>
+                        <Form.Group controlId="leaveType">
+                            <Form.Label>Leave Type</Form.Label>
+                            <Form.Control
+                                as="select"
+                                value={leaveType}
+                                onChange={(e) => setLeaveType(e.target.value)}
+                                required
+                            >
+                                <option value="sick">Sick Leave</option>
+                                <option value="casual">Casual Leave</option>
+                                <option value="extra">Extra Leave</option>
+                            </Form.Control>
+                        </Form.Group>
 
-                <h2>Leave History</h2>
-                {leaveHistory.length > 0 ? (
-                    <table className="leave-history-table">
-                        <thead>
-                            <tr>
-                                <th>Leave Date</th>
-                                <th>Type</th>
-                                <th>Purpose</th>
-                                <th>Approved</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {leaveHistory.map((leave, index) => (
-                                <tr key={index}>
-                                    <td>{new Date(leave.date).toLocaleDateString()}</td>
-                                    <td>{leave.type}</td>
-                                    <td>{leave.purpose}</td>
-                                    <td>{leave.approved}</td>
-                                    <td>
-                                        {leave.approved === 'NOT YET APPROVED' && (
-                                            <button
-                                                onClick={() => handleCancelLeave(leave._id)}
-                                                className="cancel-button"
-                                            >
-                                                Cancel
-                                            </button>
-                                        )}
-                                    </td>
+                        <Form.Group controlId="purpose">
+                            <Form.Label>Purpose</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                value={purpose}
+                                onChange={(e) => setPurpose(e.target.value)}
+                                required
+                            />
+                        </Form.Group>
+
+                        <Button type="submit" className="submit-button mt-3">Apply Leave</Button>
+                    </Form>
+
+                    {success && <Alert variant="success" className="mt-3">{success}</Alert>}
+                    {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+
+                    <Alert variant="info" className="mt-4">
+                        <h5>Leave Application Rules:</h5>
+                        <ListGroup>
+                            <ListGroup.Item className="rule-item">
+                                <strong>Sick Leave</strong> must be applied for the <span className="highlight">previous day</span>.
+                            </ListGroup.Item>
+                            <ListGroup.Item className="rule-item">
+                                <strong>Casual and Extra Leave</strong> must be applied for a date between <span className="highlight">3 and 15 days from today</span>.
+                            </ListGroup.Item>
+                        </ListGroup>
+                    </Alert>
+                </Col>
+
+                {/* Right Section: Leave Data */}
+                <Col md={6} className="leave-data">
+                    <h2>Leave Data</h2>
+                    {leaveData.length > 0 ? (
+                        <table className="leave-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Sick Leave</th>
+                                    <th>Casual Leave</th>
+                                    <th>Total Leave Left</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <p className="empty-message">No leave history available</p>
-                )}
-            </div>
-        </div>
+                            </thead>
+                            <tbody>
+                                {leaveData.map((data) => (
+                                    <tr key={`${data.month}-${data.year}`}>
+                                        <td>{data.month}</td>
+                                        <td>{data.sickLeave}</td>
+                                        <td>{data.casualLeave}</td>
+                                        <td>{data.totalLeaveLeft}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <p className="empty-message">No leave data available</p>
+                    )}
+
+                    <h3>Extra Leaves: {extraLeaves}</h3>
+
+                    <h2>Leave History</h2>
+                    {leaveHistory.length > 0 ? (
+                        <table className="leave-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Leave Date</th>
+                                    <th>Type</th>
+                                    <th>Purpose</th>
+                                    <th>Approved</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {leaveHistory.map((leave, index) => (
+                                    <tr key={index}>
+                                        <td>{new Date(leave.date).toLocaleDateString()}</td>
+                                        <td>{leave.type}</td>
+                                        <td>{leave.purpose}</td>
+                                        <td>{leave.approved}</td>
+                                        <td>
+                                            {leave.approved === 'NOT YET APPROVED' && (
+                                                <Button
+                                                    onClick={() => handleCancelLeave(leave._id)}
+                                                    className="cancel-button"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <p className="empty-message">No leave history available</p>
+                    )}
+                </Col>
+            </Row>
+        </Container>
     );
 };
 

@@ -6,6 +6,7 @@ import { MdDriveFileRenameOutline } from "react-icons/md";
 import { RiGovernmentLine } from "react-icons/ri";
 import { IoPersonAddSharp } from "react-icons/io5";
 import { IoIosContact } from "react-icons/io";
+import { IoMdAdd } from "react-icons/io";
 
 function errorMessage(statusCode, error) {
   console.log(statusCode, error);
@@ -182,6 +183,13 @@ const AddAC = () => {
 
       // Close the modal
       setShowModal(false);
+      Swal.fire({
+        position: "top-end",
+        icon: "success",
+        title: "AC Updated successfully",
+        showConfirmButton: false,
+        timer: 1500
+      });
     } catch (error) {
       console.error('Error updating AC:', error);
     } finally {
@@ -247,20 +255,30 @@ const AddAC = () => {
             <Form.Group>
               <Form.Label><IoIosContact className='me-1' />POC Mobile Number</Form.Label>
               <Form.Control
-                type="text"
+                type="number" // Use 'text' to enforce maxLength
                 name="pocMobileNumber"
                 value={newAC.pocMobileNumber}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  if (e.target.value.length <= 10) {
+                    handleInputChange(e); // Update the state only if within the limit
+                  }
+                }}
+                maxLength={10} // Prevents typing beyond this limit
                 required
               />
             </Form.Group>
           </Col>
         </Row>
-        <button class="gem-c-button govuk-button" style={{ width: '30%' }}>
-          {loading ? <Spinner as="span" animation="border" size="sm" /> : 'Add AC'}
+        <button className="gem-c-button govuk-button" style={{ width: '30%' }}>
+          {loading ? (
+            <Spinner as="span" animation="border" size="sm" />
+          ) : (
+            <>
+              <IoMdAdd /> Add AC
+            </>
+          )}
         </button>
       </Form>
-
       <h2 className="mt-5">All Assembly Constituencies</h2>
       {loading ? (
         <div className="text-center">

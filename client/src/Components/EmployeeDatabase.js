@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
+import { Container, Table, Button, Modal, Form, Row, Col } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 const EmployeeDatabase = () => {
   const [employees, setEmployees] = useState([]);
@@ -44,7 +44,7 @@ const EmployeeDatabase = () => {
     });
   };
 
-  const handlePasswordClick=(employee)=> {
+  const handlePasswordClick = (employee) => {
     setShowPasswordModal(true)
     setSelectedPasswordEmployee(employee._id)
   }
@@ -187,7 +187,7 @@ const EmployeeDatabase = () => {
               <td>
                 <Button className='m-1' variant="warning" onClick={() => handleUpdateClick(employee)}>Update</Button>
                 <Button variant="warning" onClick={() => deleteEmployee(employee)}>Delete</Button>
-                <Button className='m-1' variant="info" onClick={() => {handlePasswordClick(employee); }}>Change Password</Button>
+                <Button className='m-1' variant="info" onClick={() => { handlePasswordClick(employee); }}>Change Password</Button>
               </td>
             </tr>
           ))}
@@ -216,14 +216,13 @@ const EmployeeDatabase = () => {
           <Button variant="primary" onClick={handlePasswordChangeSubmit}>Update Password</Button>
         </Modal.Footer>
       </Modal>
-      <Modal show={!!selectedEmployee} onHide={() => setSelectedEmployee(null)} size="lg">
+      <Modal show={!!selectedEmployee} onHide={() => setSelectedEmployee(null)} size="xl">
         <Modal.Header closeButton>
-          <Modal.Title>Update Employee Details</Modal.Title>
+          <Modal.Title className="w-100 text-center">Update Employee Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleUpdateSubmit}>
-            <div className="d-flex flex-wrap">
-              {/* Three fields per row */}
+            <Row className="g-3">
               {[
                 { label: "Name", name: "name", type: "text" },
                 { label: "Age", name: "age", type: "number" },
@@ -239,19 +238,25 @@ const EmployeeDatabase = () => {
                 { label: "Bachelors Score", name: "scores.bachelors", type: "number" },
                 { label: "Masters Score", name: "scores.masters", type: "number" },
               ].map((field, index) => (
-                <div key={index} className="col-4 mb-3 me-3">
-                  <Form.Label>{field.label}</Form.Label>
-                  <Form.Control
-                    type={field.type}
-                    name={field.name}
-                    value={field.name.startsWith("scores.") ? updateData.scores[field.name.split('.')[1]] : updateData[field.name]}
-                    onChange={handleChangeUpdate}
-                    required
-                  />
-                </div>
+                <Col key={index} xs={12} sm={6} md={4}>
+                  <Form.Group controlId={`form-${field.name}`}>
+                    <Form.Label>{field.label}</Form.Label>
+                    <Form.Control
+                      type={field.type}
+                      name={field.name}
+                      value={field.name.startsWith("scores.") ? updateData.scores[field.name.split('.')[1]] : updateData[field.name]}
+                      onChange={handleChangeUpdate}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
               ))}
+            </Row>
+            <div className="text-center mt-4">
+              <Button type="submit" variant="primary" className="px-4">
+                Update Employee
+              </Button>
             </div>
-            <Button type="submit" variant="primary">Update Employee</Button>
           </Form>
         </Modal.Body>
       </Modal>

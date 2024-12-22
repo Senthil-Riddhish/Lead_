@@ -34,6 +34,17 @@ const CreateEmployee = () => {
       setFormData((prevState) => ({ ...prevState, [name]: value }));
     }
   };
+  const handleAadharInputChange = (e) => {
+    let { name, value } = e.target;
+
+    // Remove any non-digit characters
+    value = value.replace(/\D/g, '');
+
+    // Format the value as xxxx-xxxx-xxxx
+    if (value.length > 4) value = value.slice(0, 4) + '-' + value.slice(4);
+    if (value.length > 9) value = value.slice(0, 9) + '-' + value.slice(9);
+    setFormData((prevState) => ({ ...prevState, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,7 +82,7 @@ const CreateEmployee = () => {
       Swal.fire({
         position: "top-end",
         icon: "error",
-        title: error.response.data.error,
+        title: error.response.data.message,
         showConfirmButton: false,
         timer: 1500
       });
@@ -81,7 +92,7 @@ const CreateEmployee = () => {
   return (
     <Container>
       <h2>Create Employee</h2>
-      <Form onSubmit={handleSubmit} style={{textAlign:'center'}}>
+      <Form onSubmit={handleSubmit} style={{ textAlign: 'center' }}>
         <Row className="mb-3">
           <Col>
             <Form.Group controlId="formName">
@@ -158,7 +169,14 @@ const CreateEmployee = () => {
                 name="phoneNumber"
                 placeholder="Enter Phone Number"
                 value={formData.phoneNumber}
-                onChange={handleChange}
+                onChange={(e) => {
+                  // Allow only numbers and limit to 10 characters
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value) && value.length <= 10) {
+                    handleChange(e); // Update state only if valid
+                  }
+                }}
+                maxLength={10} // Enforces max length in the UI
                 required
               />
             </Form.Group>
@@ -184,9 +202,9 @@ const CreateEmployee = () => {
               <Form.Control
                 type="text"
                 name="aadharId"
-                placeholder="Enter Aadhar ID"
                 value={formData.aadharId}
-                onChange={handleChange}
+                onChange={handleAadharInputChange}
+                maxLength="14" // Limit input length to account for hyphens
                 required
               />
             </Form.Group>

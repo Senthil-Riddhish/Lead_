@@ -11,7 +11,7 @@ const About = () => {
   return (
     <Container className="text-center my-4 dm-sans-googleFont">
       {/* Button Section */}
-      <Row className="justify-content-center my-4">
+      <Row className="justify-content-center my-2">
         <Col xs="auto" className="d-flex justify-content-around">
           <button class="gem-c-button govuk-button" type="submit" onClick={() => handleContentChange('ac')}>
             Add AC

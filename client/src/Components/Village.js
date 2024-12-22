@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const VillagesModal = ({ acId, mandalId, closeModal }) => {
   const [villages, setVillages] = useState([]);
@@ -23,22 +24,50 @@ const VillagesModal = ({ acId, mandalId, closeModal }) => {
   // Handle adding a new village
   const addVillage = async () => {
     try {
-      const response = await axios.post(`/add-village/${acId}/${mandalId}`, { name: newVillageName });
+      const response = await axios.post(`http://localhost:8000/ac/add-village/${acId}/${mandalId}`, { name: newVillageName });
       setVillages([...villages, response.data.data]);
       setNewVillageName('');
+      Swal.fire({
+        position: "top-end",
+        icon: "success",
+        title: "Village Added Successfully",
+        showConfirmButton: false,
+        timer: 1500
+      });
     } catch (error) {
       console.error('Error adding village:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: error.response.data.message,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
   // Handle editing a village
   const updateVillage = async (villageId, updatedName) => {
     try {
-      const response = await axios.put(`/edit-village/${acId}/${mandalId}/${villageId}`, { name: updatedName });
+      const response = await axios.put(`http://localhost:8000/ac/edit-village/${acId}/${mandalId}/${villageId}`, { name: updatedName });
       setVillages(villages.map(village => village._id === villageId ? { ...village, name: updatedName } : village));
       setEditingVillage(null); // Close the editing pop-up
+      Swal.fire({
+        position: "top-end",
+        icon: "success",
+        title: "Village Updated Successfully",
+        showConfirmButton: false,
+        timer: 1500
+      });
     } catch (error) {
       console.error('Error updating village:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: error.response.data.message,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
@@ -46,7 +75,7 @@ const VillagesModal = ({ acId, mandalId, closeModal }) => {
     <div className="villages-modal">
       <button onClick={closeModal}>Close</button>
       <h2>Villages in Mandal</h2>
-      <input 
+      <input
         type="text"
         placeholder="New Village Name"
         value={newVillageName}
@@ -76,7 +105,7 @@ const VillagesModal = ({ acId, mandalId, closeModal }) => {
       {editingVillage && (
         <div className="edit-village-popup">
           <h3>Edit Village</h3>
-          <input 
+          <input
             type="text"
             value={editingVillage.name}
             onChange={(e) => setEditingVillage({ ...editingVillage, name: e.target.value })}

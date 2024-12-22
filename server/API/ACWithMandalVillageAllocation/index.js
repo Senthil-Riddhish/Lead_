@@ -72,7 +72,7 @@ Router.put('/edit-ac/:id', async (req, res) => {
       $or: [{ name: req.body.name }, { PCId: req.body.PCId }]
     });
 
-    if (existingAC) {
+    if (existingAC && existingAC._id.toString() !== req.params.id) {
       // If a matching document is found, return an appropriate error response
       if (existingAC.name === req.body.name) {
         return res.status(400).json({ message: 'An AC with this name already exists.' });
@@ -159,6 +159,7 @@ Router.put('/edit-mandal/:acId/:mandalId', async (req, res) => {
   const { acId, mandalId } = req.params;
 
   try {
+  
     // Retrieve the AC document to check for duplicates
     const ac = await AC.findById(acId);
 
@@ -168,10 +169,11 @@ Router.put('/edit-mandal/:acId/:mandalId', async (req, res) => {
 
     // Check if the name already exists in the mandals array (excluding the current mandalId)
     const isDuplicate = ac.mandals.some(
-      (mandal) => mandal.name === name && mandal._id.toString() !== mandalId
+      (mandal) => mandal.name.toUpperCase() === name.toUpperCase() && mandal._id.toString() !== mandalId
     );
-
+    console.log(isDuplicate);
     if (isDuplicate) {
+      console.log("duplicate");
       return res.status(400).json({ message: 'Mandal with this name already exists' });
     }
 
@@ -214,7 +216,7 @@ Router.put('/edit-village/:acId/:mandalId/:villageId', async (req, res) => {
 
     // Check if the village name already exists in the villages array (excluding the current village)
     const isDuplicate = mandal.villages.some(
-      (village) => village.name === name && village._id.toString() !== villageId
+      (village) => village.name.toUpperCase() === name.toUpperCase() && village._id.toString() !== villageId
     );
 
     if (isDuplicate) {

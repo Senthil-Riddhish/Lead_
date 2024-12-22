@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Chart from 'react-apexcharts';
 import { Container, Row, Col } from 'react-bootstrap';
+import { Pie, Bar } from 'react-chartjs-2'; // Import chart components from react-chartjs-2
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'; // Import necessary chart.js elements
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+// Register the necessary chart.js elements
+ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
 
@@ -35,7 +39,6 @@ const Home = () => {
           );
           setData(response.data.data);
           console.log(response.data.data);
-
         }
       } catch (error) {
         console.error('Error initializing page:', error);
@@ -69,97 +72,69 @@ const Home = () => {
     (acc, { count }) => acc + (count || 0),
     0
   );
-
-  const pieChartOptions = {
-    chart: {
-      type: 'pie',
-      animations: {
-        enabled: true,
-        easing: 'easeinout',
-        speed: 800,
-      },
-    },
+  const pieChartData = {
     labels: grievanceCounts.map((item) => item.category),
-    colors: COLORS,
-    legend: {
-      position: 'bottom',
-    },
+    datasets: [
+      {
+        data: grievanceCounts.map((item) => item.count),
+        backgroundColor: COLORS,
+      },
+    ],
   };
 
-  const pieChartSeries = grievanceCounts.map((item) => item.count);
-
-  const barChartOptions = {
-    chart: {
-      type: 'bar',
-      toolbar: { show: false },
-      dropShadow: {
-        enabled: true,
-        top: 2,
-        left: 2,
-        blur: 3,
-        color: '#000',
-        opacity: 0.4,
+  // Pie chart options with legend below the chart
+  const pieChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom', // Set legend position to bottom
       },
     },
-    xaxis: {
-      categories: grievanceCounts.map((item) => item.category),
-      labels: {
-        rotate: -45, // Rotate labels to a 45-degree angle
-        style: {
-          fontSize: '10px', // Reduce font size for labels
-        },
+  };
+  // Bar chart data and options
+  const barChartData = {
+    labels: grievanceCounts.map((item) => item.category),
+    datasets: [
+      {
+        label: 'Grievances',
+        data: grievanceCounts.map((item) => item.count),
+        backgroundColor: COLORS,
       },
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '45%',
-        endingShape: 'rounded',
-      },
-    },
-    colors: COLORS,
-    dataLabels: {
-      enabled: false,
-    },
-  };  
-
-  const barChartSeries = [
-    {
-      name: 'Grievances',
-      data: grievanceCounts.map((item) => item.count),
-    },
-  ];
+    ],
+  };
 
   return (
     <Container>
       <h1 className="text-center my-4">
         Welcome, {userInfo.role ? profile.name : `${profile.firstname} ${profile.lastname}`}
       </h1>
-
       <Row className="mb-4">
         {/* Charts in one row */}
         <Col xs={12} md={6} className="mb-4">
-          <div className="chart-card">
-            <h3>Grievance Distribution (Pie Chart)</h3>
-            <Chart options={pieChartOptions} series={pieChartSeries} type="pie" width="100%" height={300} />
+          <div className="chart-card" style={{ height: '400px' }}>
+            <h3 style={{textAlign:"center"}}>Grievance Distribution</h3>
+            {/* Pie Chart with legend below */}
+            <Pie data={pieChartData} options={pieChartOptions} width={40} height={30} />
           </div>
         </Col>
         <Col xs={12} md={6}>
-          <div className="chart-card">
-            <h3>Grievance Counts by Category (Bar Chart)</h3>
-            <Chart options={barChartOptions} series={barChartSeries} type="bar" width="100%" height={300} />
+          <div className="chart-card"  style={{ height: '400px' }}>
+            <h3 style={{textAlign:"center"}}>Grievance Counts by Category</h3>
+            {/* Bar Chart */}
+            <Bar data={barChartData} width={40} height={30} />
           </div>
         </Col>
       </Row>
       <Row className="mb-4">
         <Col xs={12} md={6} className="mb-4">
-          <div className="card shadow-lg p-3  text-center">
+          <div className="card shadow-lg p-3 text-center">
             <h3 className="text-center">Total Records</h3>
             <div className="card-value">{totalRecords}</div>
           </div>
         </Col>
         <Col xs={12} md={6}>
-          <div className="card shadow-lg p-3  text-center">
+          <div className="card shadow-lg p-3 text-center">
             <h3 className="text-center">Total Employees</h3>
             <div className="card-value">{totalEmployees}</div>
           </div>

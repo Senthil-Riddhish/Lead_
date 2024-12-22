@@ -336,8 +336,6 @@ const GrievanceTable = () => {
     // Updating the grievances state with the grouped data
     setGrievances(groupedGrievances);
   };
-
-
   return (
     <Container className="mt-5 dm-sans-googleFont">
       <h2>Employee Grievance Records</h2>

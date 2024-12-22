@@ -366,13 +366,14 @@ const LetterRequestForm = () => {
   else {
     return (
       <Container className='dm-sans-googleFont'>
-        <Row className="my-2">
+        <Row className="align-items-center">
           <Col>
-            <h6>Current Date: {currentDate}</h6>
+            <h6 className="text-primary fw-bold">
+              📅 Current Date: {new Date(currentDate).toLocaleDateString()}
+            </h6>
           </Col>
         </Row>
-
-        <h3 className="my-4">Letter Request Form</h3>
+        <h3 className="my-4 me-3 ps-2">Letter Request Form</h3>
         <Form onSubmit={handleSubmit}>
           <Row className="mb-3">
             <Col md={4}>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Container, Row, Col, Table, Form, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-
+import './Mandal.css'
 const Mandal = () => {
   const [acs, setAcs] = useState([]);
   const [selectedAc, setSelectedAc] = useState(null);
@@ -211,8 +211,24 @@ const Mandal = () => {
       .then((response) => {
         setVillages([...villages, response.data.data]);
         setNewVillageName('');
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Village Added Successfully",
+          showConfirmButton: false,
+          timer: 1500
+        });
       })
-      .catch((error) => console.error('Error adding village:', error));
+      .catch((error) => {
+        console.error('Error adding village:', error)
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: error.response.data.message,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      });
   };
 
   // Show update modal for Village
@@ -317,8 +333,24 @@ const Mandal = () => {
         setVillages(updatedVillages);
         setSelectedVillage(null);
         setUpdateVillageName('');
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Village Updated Successfully",
+          showConfirmButton: false,
+          timer: 1500
+        });
       })
-      .catch((error) => console.error('Error updating village:', error));
+      .catch((error) => {
+        console.error('Error updating village:', error)
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: error.response.data.message,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      });
   };
 
   return (

@@ -67,13 +67,27 @@ router.post("/create-emp", async(req,res)=>{
         console.log("validation complete");
         await EmployeeModel.findByEmailAndPhone(req.body.credentials)
         console.log("findByEmailAndPhone complete");
+        const existingEmployee = await EmployeeModel.findOne({
+          $or: [{ aadharId: req.body.credentials.aadharId }, { panId: req.body.credentials.panId },{epf: req.body.credentials.epf}]
+        });
+        if(existingEmployee) {
+          if(existingEmployee.aadharId === req.body.credentials.aadharId){
+            return res.status(400).json({ message : "AadharId Already Exist", status: "success" });
+          } 
+          if(existingEmployee.panId === req.body.credentials.panId){
+            return res.status(400).json({ message : "PanId Already Exist", status: "success" });
+          }
+          if(existingEmployee.epf === req.body.credentials.epf){
+            return res.status(400).json({ message : "EPF Already Exist", status: "success" });
+          }
+        }
         const newEmp = EmployeeModel.create(req.body.credentials)
         return res.status(200).json({ message : "Employee Added Successfully", status: "success" });
     }catch(error){
         console.log(error);
         const statusCode = error.statusCode || 500; // Default to 500 if no status code is provided
         const message = error.message || "Internal Server Error";
-        return res.status(statusCode).json({ error: message });
+        return res.status(statusCode).json({ message: message });
     }
 
 });

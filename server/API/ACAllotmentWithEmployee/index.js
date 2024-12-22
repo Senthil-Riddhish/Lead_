@@ -21,9 +21,11 @@ router.post('/add-allotment', async (req, res) => {
 
     // Check if the employee has already been assigned to the any AC
     const existingAllotment = await Allotment.findOne({ employee: employeeId});
+    console.log(existingAllotment);
+    const existingac = await AC.findById(existingAllotment.ac);
     if (existingAllotment) {
       return res.status(403).json({
-        message: `EMPLOYEE '${employee.name}' HAS ALREADY BEEN ASSIGNED WITH ${ac.name}`
+        message: `EMPLOYEE '${employee.name}' HAS ALREADY BEEN ASSIGNED WITH ${existingac.name}`
       });
     }
 
