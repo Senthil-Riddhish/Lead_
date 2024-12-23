@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Row, Col, Form, Button, Alert, ListGroup } from 'react-bootstrap';
 import './LeaveManagement.css';
+import Swal from 'sweetalert2';
 
 const LeaveManagement = ({ employeeId }) => {
     const [leaveData, setLeaveData] = useState([]);
@@ -20,7 +21,13 @@ const LeaveManagement = ({ employeeId }) => {
                 setLeaveData(response.data.leaveData);
                 setExtraLeaves(response.data.extraLeaves);
             } catch (err) {
-                console.error('Error fetching leave data', err);
+                Swal.fire({
+                    position: "top-end",
+                    icon: "error",
+                    title: `Error in fetching leave data. Please try again.`,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             }
         };
 
@@ -29,7 +36,13 @@ const LeaveManagement = ({ employeeId }) => {
                 const response = await axios.get(`http://localhost:8000/employee/leave-history/${employeeId}`);
                 setLeaveHistory(response.data);
             } catch (err) {
-                console.error('Error fetching leave history', err);
+                Swal.fire({
+                    position: "top-end",
+                    icon: "error",
+                    title: `Error in fetching leave history. Please try again.`,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             }
         };
 

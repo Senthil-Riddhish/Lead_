@@ -41,17 +41,28 @@ router.delete('/delete-employee/:id', async (req, res) => {
 
       for (const category in grievanceCategories) {
         const grievanceIds = grievanceCategories[category];
-        for (const grievanceId of grievanceIds) {
-          // Delete documents in AssignedwithTrackingDocument referencing this grievance ID
-          const deletedTrackingDocs = await AssignedwithTrackingDocument.deleteMany({
-            referenceTrackingDocument: grievancesTrack._id,
-            referenceGrievanceDocument: grievanceId,
-          });
-          console.log(
-            `Deleted ${deletedTrackingDocs.deletedCount} tracking documents for grievance ID: ${grievanceId}`
-          );
+        
+        // Check if grievanceIds is an array
+        if (!Array.isArray(grievanceIds)) {
+          console.warn(`Skipping non-array category: ${category}`);
+          continue;
         }
-      }
+      
+        for (const grievanceId of grievanceIds) {
+          try {
+            // Delete documents in AssignedwithTrackingDocument referencing this grievance ID
+            const deletedTrackingDocs = await AssignedwithTrackingDocument.deleteMany({
+              referenceTrackingDocument: grievancesTrack._id,
+              referenceGrievanceDocument: grievanceId,
+            });
+            console.log(
+              `Deleted ${deletedTrackingDocs.deletedCount} tracking documents for grievance ID: ${grievanceId}`
+            );
+          } catch (err) {
+            console.error(`Error deleting tracking documents for grievance ID: ${grievanceId}`, err);
+          }
+        }
+      }      
 
       // Delete the EmployeeGrievancesTrack document
       await EmployeeGrievancesTrack.findByIdAndDelete(grievancesTrack._id);
@@ -492,7 +503,7 @@ router.put('/cancel-leave/:employeeId/:leaveId', async (req, res) => {
 router.get('/getAllHistoryOfAllEmployees', async (req, res) => {
   try {
     const leaveHistory = await LeaveHistory.find().populate('employeeId', 'name'); // Populate to get employee names
-    console.log(leaveHistory);
+    console.log("leaveHistory",leaveHistory);
     const notApprovedLeaves = leaveHistory.reduce((acc, curr) => {
       const notApproved = curr.leaveHistory.filter(leave => leave.approved === "NOT YET APPROVED");
       if (notApproved.length > 0) {

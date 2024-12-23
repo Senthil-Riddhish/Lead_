@@ -25,23 +25,17 @@ const Development = ({
 
     useEffect(() => {
         if (assignedAc) {
-            console.log(acData);
             const selectedAcMandals = acData[assignedAc]?.mandals || {};
             setMandals(Object.entries(selectedAcMandals).map(([mandalId, mandalInfo]) => ({
                 id: mandalId,
                 name: mandalInfo.name,
                 villages: mandalInfo.village || []
             })));
-            console.log(mandals);
             if (("development" in formData) && ("mandal" in formData.development)) {
                 const filteredVillage = mandals.filter(ind => ind.id == formData.development.mandal);
-                console.log(filteredVillage, formData.development.mandal);
                 if (filteredVillage.length > 0) {
                     setVillages(filteredVillage[0].villages);
-                    console.log(villages.some((element) => element._id == formData.development.village), villages);
                     if ((filteredVillage[0].villages).some((element) => element._id == formData.development.village)) {
-                        console.log("true")
-                        console.log(formData.development.mandal);
                         setmandalselectedDropdown(formData.development.mandal)
                         setvillageselectedDropdown(formData.development.village)
                     }

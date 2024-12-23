@@ -24,7 +24,15 @@ const AllotmentComponent = () => {
         });
         setAcMap(acMapData);
       })
-      .catch(error => console.error('Error fetching ACs:', error));
+      .catch(error => {
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: `AC Details could not be found. Please try again.`,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      });
 
     // Fetch employee details
     axios.get('http://localhost:8000/allotment/getAll-employees')
@@ -37,7 +45,15 @@ const AllotmentComponent = () => {
         });
         setEmployeeMap(employeeMapData);
       })
-      .catch(error => console.error('Error fetching employees:', error));
+      .catch(error => {
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: `Error in fetching employees. Please try again.`,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      });
 
     // Fetch initial allotments
     fetchAllotments();
@@ -49,7 +65,15 @@ const AllotmentComponent = () => {
       .then((response) => {
         setAllotments(response.data.allotments);
       })
-      .catch(error => console.error('Error fetching allotments:', error));
+      .catch(error => {
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: `Error in fetching allotments`,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      });
   };
 
   // Handle allotment assignment
@@ -60,22 +84,21 @@ const AllotmentComponent = () => {
     })
       .then(response => {
         Swal.fire({
-            title: "Successfully Added!",
-            icon: "success"
-          });
-        console.log('Allotment created:', response.data);
+          title: "Successfully Added!",
+          icon: "success"
+        });
         setAllotments(prev => [...prev, response.data.allotment]);
         setSelectedAcId('');
         setSelectedEmployeeId('');
       })
       .catch(error => {
         switch (error.status) {
-            case 403:
-                Swal.fire({
-                    icon: "error",
-                    title: "Sorry",
-                    text: error.response.data.message
-                  });
+          case 403:
+            Swal.fire({
+              icon: "error",
+              title: "Sorry",
+              text: error.response.data.message
+            });
         }
       });
   };
@@ -90,8 +113,8 @@ const AllotmentComponent = () => {
           <Form>
             <Form.Group controlId="acSelect" className="mb-3">
               <Form.Label>Allotment (AC)</Form.Label>
-              <Form.Select 
-                value={selectedAcId} 
+              <Form.Select
+                value={selectedAcId}
                 onChange={e => setSelectedAcId(e.target.value)}
               >
                 <option value="">Select AC</option>
@@ -103,8 +126,8 @@ const AllotmentComponent = () => {
 
             <Form.Group controlId="employeeSelect" className="mb-3">
               <Form.Label>Employee</Form.Label>
-              <Form.Select 
-                value={selectedEmployeeId} 
+              <Form.Select
+                value={selectedEmployeeId}
                 onChange={e => setSelectedEmployeeId(e.target.value)}
               >
                 <option value="">Select Employee</option>

@@ -15,7 +15,8 @@ const AttendancePlanner = () => {
             try {
                 const token = sessionStorage.getItem('token');
                 if (!token) {
-                    navigate('/login');
+                    //navigate('/login');
+                    window.location.reload();
                 } else {
                     const tokenResponse = await axios.post(
                         'http://localhost:8000/auth/getTokeninfo',
@@ -31,8 +32,9 @@ const AttendancePlanner = () => {
                     setData(response.data.data);
                 }
             } catch (error) {
-                console.error('Error initializing page:', error);
+                sessionStorage.removeItem('token');
                 navigate('/login');
+                window.location.reload();
             } finally {
                 setLoading(false);
             }

@@ -24,7 +24,15 @@ const Mandal = () => {
       .then((response) => {
         setAcs(response.data.data);
       })
-      .catch((error) => console.error('Error fetching ACs:', error));
+      .catch((error) => {
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: "Error in fetching ACs. Please try again.",
+          showConfirmButton: false,
+          timer: 1500
+        });
+      });
   }, []);
 
   // Fetch mandals for selected AC
@@ -146,9 +154,6 @@ const Mandal = () => {
             setMandals((prevMandals) =>
               prevMandals.filter((m) => m._id !== mandal._id)
             );
-
-            // Log success and show a success alert
-            console.log("Mandal deleted successfully:", mandal.name);
             Swal.fire({
               title: "Deleted!",
               text: `The mandal "${mandal.name}" has been successfully deleted.`,
@@ -157,8 +162,6 @@ const Mandal = () => {
               showConfirmButton: false
             });
           } else {
-            // Handle unexpected response status
-            console.error("Failed to delete mandal:", response.data.message);
             Swal.fire({
               title: "Error!",
               text: "Failed to delete the mandal. Please try again.",
@@ -168,14 +171,12 @@ const Mandal = () => {
         } catch (error) {
           // Handle API errors
           if (error.response) {
-            console.error("Failed to delete mandal:", error.response.data.message);
             Swal.fire({
               title: "Error!",
               text: error.response.data.message || "Failed to delete the mandal.",
               icon: "error"
             });
           } else {
-            console.error("Error deleting mandal:", error.message);
             Swal.fire({
               title: "Error!",
               text: "An error occurred while deleting the mandal. Please try again.",
@@ -185,9 +186,6 @@ const Mandal = () => {
         }
       }
     } catch (error) {
-      console.error("Swal error or cancellation:", error);
-
-      // Show an error alert if something goes wrong with Swal or the user cancels
       Swal.fire({
         position: "top-end",
         icon: "error",
@@ -220,7 +218,6 @@ const Mandal = () => {
         });
       })
       .catch((error) => {
-        console.error('Error adding village:', error)
         Swal.fire({
           position: "top-end",
           icon: "error",
@@ -280,9 +277,6 @@ const Mandal = () => {
             setVillages((prevVillages) =>
               prevVillages.filter((v) => v._id !== village._id)
             );
-
-            console.log("Village deleted successfully:", village.name);
-
             // Show success alert
             Swal.fire({
               title: "Deleted!",
@@ -293,7 +287,6 @@ const Mandal = () => {
             });
           } else {
             const errorData = await response.json();
-            console.error("Failed to delete village:", errorData.message);
             Swal.fire({
               title: "Error!",
               text: errorData.message || "Failed to delete the village. Please try again.",
@@ -301,9 +294,6 @@ const Mandal = () => {
             });
           }
         } catch (error) {
-          console.error("Error deleting village:", error);
-
-          // Show error alert for network or unexpected errors
           Swal.fire({
             title: "Error!",
             text: "An error occurred while deleting the village. Please try again.",
@@ -312,9 +302,6 @@ const Mandal = () => {
         }
       }
     } catch (error) {
-      console.error("Swal error or cancellation:", error);
-
-      // Show an error alert if something goes wrong with Swal or the user cancels
       Swal.fire({
         position: "top-end",
         icon: "error",
@@ -342,7 +329,6 @@ const Mandal = () => {
         });
       })
       .catch((error) => {
-        console.error('Error updating village:', error)
         Swal.fire({
           position: "top-end",
           icon: "error",

@@ -23,7 +23,8 @@ const Home = () => {
       try {
         const token = sessionStorage.getItem('token');
         if (!token) {
-          navigate('/login');
+          //navigate('/login');
+          window.location.reload();
         } else {
           const tokenResponse = await axios.post(
             'http://localhost:8000/auth/getTokeninfo',
@@ -38,11 +39,11 @@ const Home = () => {
             `http://localhost:8000/grievances/consolidated-data/${userId}/${role}`
           );
           setData(response.data.data);
-          console.log(response.data.data);
         }
       } catch (error) {
-        console.error('Error initializing page:', error);
+        sessionStorage.removeItem('token');
         navigate('/login');
+        window.location.reload();
       } finally {
         setLoading(false);
       }

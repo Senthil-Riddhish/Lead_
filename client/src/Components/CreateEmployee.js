@@ -49,7 +49,6 @@ const CreateEmployee = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log(formData);
       const response = await axios.post('http://localhost:8000/auth/create-emp', {
         credentials: formData
       });

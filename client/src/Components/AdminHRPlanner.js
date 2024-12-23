@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './AdminLeaveApproval.css';
+import Swal from 'sweetalert2';
 
 const AdminLeaveApproval = () => {
   const [notApprovedLeaves, setNotApprovedLeaves] = useState([]);
@@ -12,13 +13,18 @@ const AdminLeaveApproval = () => {
     const fetchLeaveHistory = async () => {
       try {
         const response = await axios.get('http://localhost:8000/employee/getAllHistoryOfAllEmployees');
-        console.log(response.data);
         setNotApprovedLeaves(response.data.notApprovedLeaves);
         setApprovedLeaves(response.data.approvedLeaves);
         setRejectedLeaves(response.data.rejectedLeaves);
       } catch (error) {
         setError('Error fetching leave history. Please try again later.');
-        console.error('Error fetching leave history:', error);
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: `Error fetching leave history. Please try again later.`,
+          showConfirmButton: false,
+          timer: 1500
+        });
       }
     };
 
@@ -33,7 +39,13 @@ const AdminLeaveApproval = () => {
       setApprovedLeaves([...approvedLeaves, { ...approvedLeave, approved: 'APPROVED' }]);
     } catch (error) {
       setError('Error approving leave. Please try again.');
-      console.error('Error approving leave:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `Error in approving leave. Please try again.`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
@@ -50,8 +62,13 @@ const AdminLeaveApproval = () => {
         }
        }]);
     } catch (error) {
-      setError('Error rejecting leave. Please try again.');
-      console.error('Error rejecting leave:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `Error rejecting leave. Please try again.`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 

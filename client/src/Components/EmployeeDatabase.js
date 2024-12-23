@@ -22,8 +22,13 @@ const EmployeeDatabase = () => {
       const response = await axios.get('http://localhost:8000/allotment/getAll-employees');
       setEmployees(response.data.employees);
     } catch (error) {
-      console.error(error);
-      alert('Error fetching employees');
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `Error in fetching Employees. Please try again.`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
@@ -50,7 +55,6 @@ const EmployeeDatabase = () => {
   }
 
   const handlePasswordChangeSubmit = async () => {
-    console.log(selectedPasswordEmployee);
     try {
       const response = await axios.put(
         `http://localhost:8000/employee/update-password/${selectedPasswordEmployee}`,
@@ -68,7 +72,6 @@ const EmployeeDatabase = () => {
         setNewPassword("");
       }
     } catch (error) {
-      console.error('Error updating password:', error);
       Swal.fire({
         position: "top-end",
         icon: "error",
@@ -83,7 +86,6 @@ const EmployeeDatabase = () => {
     try {
       const response = await axios.delete(`http://localhost:8000/employee/delete-employee/${employee._id}`);
       if (response.status === 200) {
-        console.log(response.data.message);
         Swal.fire({
           position: "top-end",
           icon: "success",
@@ -91,14 +93,10 @@ const EmployeeDatabase = () => {
           showConfirmButton: false,
           timer: 1500
         });
-
-        // Remove the deleted employee from the employees array
-        console.log(employee._id, employees);
         const updatedEmployees = employees.filter(emp => emp._id !== employee._id);
         setEmployees(updatedEmployees); // Update the state or variable holding the employee list
       }
     } catch (error) {
-      console.error('Error deleting employee:', error);
       Swal.fire({
         position: "top-end",
         icon: "error",
@@ -141,10 +139,6 @@ const EmployeeDatabase = () => {
       setSelectedEmployee(null);
       fetchEmployees(); // Refresh employee list
     } catch (error) {
-      console.log(
-        error
-      );
-
       switch (error.status) {
         case 400:
           Swal.fire({
@@ -185,9 +179,27 @@ const EmployeeDatabase = () => {
               <td>{employee._id}</td>
               <td>{employee.name}</td>
               <td>
-                <Button className='m-1' variant="warning" onClick={() => handleUpdateClick(employee)}>Update</Button>
-                <Button variant="warning" onClick={() => deleteEmployee(employee)}>Delete</Button>
-                <Button className='m-1' variant="info" onClick={() => { handlePasswordClick(employee); }}>Change Password</Button>
+                <Button
+                  className="m-1 fw-bold"
+                  variant="outline-success"
+                  onClick={() => handleUpdateClick(employee)}
+                >
+                  Update
+                </Button>
+                <Button
+                  className="m-1 fw-bold"
+                  variant="outline-danger"
+                  onClick={() => deleteEmployee(employee)}
+                >
+                  Delete
+                </Button>
+                <Button
+                  className="m-1 fw-bold"
+                  variant="outline-warning"
+                  onClick={() => handlePasswordClick(employee)}
+                >
+                  Change Password
+                </Button>
               </td>
             </tr>
           ))}

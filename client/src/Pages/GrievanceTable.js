@@ -23,46 +23,50 @@ const GrievanceTable = () => {
   const [token, setToken] = useState('');
   const [acMap, setAcMap] = useState(new Map());
   const [mandalMap, setMandalMap] = useState(new Map());
-  const [villageMap, setVillageMap] = useState(new Map());  
+  const [villageMap, setVillageMap] = useState(new Map());
   const [tokenInfo, setUserInfo] = useState({
     userId: '',
     role: ''
   });
-
   const navigate = useNavigate();
   useEffect(() => {
     const initializePage = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        console.log(token);
         if (!token) {
-          navigate('/login');
-        } else {
-          const tokenResponse = await axios.post('http://localhost:8000/auth/getTokeninfo', { token });
-          const { userId, role } = tokenResponse.data;
-          setUserInfo({ userId, role });
-          fetchGrievances(userId, role);
-          if (role === 1) {
-            await fetchEmployeeAcDetails(userId);
-          } else if (role === 0) {
-            await fetchAllAcData();
-          }
+          window.location.reload();
+          return; // Exit to prevent further execution
         }
+
+        const tokenResponse = await axios.post('http://localhost:8000/auth/getTokeninfo', { token });
+        const { userId, role } = tokenResponse.data;
+
+        setUserInfo({ userId, role }); // Update user info
+
+        // Fetch data based on role
+        if (role === 1) {
+          await fetchEmployeeAcDetails(userId);
+        } else if (role === 0) {
+          await fetchAllAcData();
+        }
+
+        await fetchGrievances(userId, role);
       } catch (error) {
-        console.error('Error initializing page:', error);
+        sessionStorage.removeItem('token'); // Clear token on error
         navigate('/login');
+        window.location.reload();
       } finally {
-        setLoading(false); // Set loading to false after all requests complete
+        setLoading(false); // Ensure loading state is cleared
       }
     };
 
     initializePage();
-  }, [navigate]);
+  }, []); // Empty dependency array ensures effect runs only once on mount  
   const fetchAllACMandalVillageData = (jsonData) => {
     const acMapTemp = new Map();
     const mandalMapTemp = new Map();
     const villageMapTemp = new Map();
-  
+
     // Populate temporary maps
     jsonData.data.forEach(ac => {
       acMapTemp.set(ac._id, ac.name);
@@ -73,17 +77,12 @@ const GrievanceTable = () => {
         });
       });
     });
-  
+
     // Update state with the populated maps
     setAcMap(acMapTemp);
     setMandalMap(mandalMapTemp);
     setVillageMap(villageMapTemp);
-  
-    // Log to verify
-    console.log("AC Map:", acMapTemp);
-    console.log("Mandal Map:", mandalMapTemp);
-    console.log("Village Map:", villageMapTemp);
-  };  
+  };
   const fetchEmployeeAcDetails = async (employeeId) => {
     try {
       const { data } = await axios.get(`http://localhost:8000/allotment/employee-allotment/${employeeId}`);
@@ -98,7 +97,13 @@ const GrievanceTable = () => {
       fetchAllACMandalVillageData(acDetails.data)
       createAcMap(acDetails.data, allotedACId);
     } catch (error) {
-      console.error('Error fetching AC details:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `Employee's AC details count not be fetched`,
+        showConfirmButton: false,
+        timer: 1500
+      });
       setIsAcAllocated(false);
     }
   };
@@ -109,7 +114,13 @@ const GrievanceTable = () => {
       fetchAllACMandalVillageData(data);
       createAcMap(data, allotedACId, allocatedMandalId, allocatedVillageId);
     } catch (error) {
-      console.error('Error fetching all AC data:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `Error in fetching AC details`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
@@ -138,7 +149,6 @@ const GrievanceTable = () => {
   const handleAcChange = (e) => {
     const acId = e.target.value;
     setSelectedAc(acId);
-    console.log("selected ac : ", selectedAc);
     if (acId) {
       setMandals(Object.keys(acData[acId]?.mandals || {}));
       let arr = [];
@@ -159,7 +169,6 @@ const GrievanceTable = () => {
 
   const handleMandalChange = (e) => {
     const mandalId = e.target.value;
-    console.log(mandalId);
     setSelectedMandal(mandalId);
     if (mandalId) {
       setVillages(acData[selectedAc]?.mandals[mandalId].village || []);
@@ -194,7 +203,6 @@ const GrievanceTable = () => {
       // Extract keys and update the grievanceCategories state
       const categories = Object.keys(data.grievanceCategories);
       setGrievanceCategories(categories);
-
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -227,19 +235,14 @@ const GrievanceTable = () => {
 
   const deleteEdit = async (grievanceId, category) => {
     try {
-      console.log(grievanceId, category);
-
       // Call the delete API
       const response = await axios.get(`http://localhost:8000/grievances/delete-grievance/${grievanceId}`);
       if (response.status === 200) {
-        console.log("Grievance deleted successfully:", grievanceId);
-
         // Update the grievances state by removing the deleted grievance from the specific category
         setGrievances((prevGrievances) => {
           const updatedCategory = prevGrievances[category].filter(
             (grievance) => grievance._id !== grievanceId
           );
-
           return {
             ...prevGrievances,
             [category]: updatedCategory,
@@ -253,10 +256,22 @@ const GrievanceTable = () => {
           timer: 1500
         });
       } else {
-        console.error("Failed to delete grievance:", response.data.message);
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: `Failed to delete Record`,
+          showConfirmButton: false,
+          timer: 1500
+        });
       }
     } catch (error) {
-      console.error("EFrror while deleting grievance:", error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `Error in deleting the Record`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
@@ -287,25 +302,16 @@ const GrievanceTable = () => {
           </Button>
         </td>
         <td>
-          <JsonToPdf jsonData={grievance} acName={acMap} mandalName={mandalMap} villageName={villageMap}/>
+          <JsonToPdf jsonData={grievance} acName={acMap} mandalName={mandalMap} villageName={villageMap} />
         </td>
       </tr>
     ));
   };
 
   const handleButtonClick = () => {
-    console.log("grievances : ", grievances);
-    console.log("Token : ", token);
-    console.log("Category : ", selectedCategory);
-    console.log("AC : ", selectedAc);
-    console.log("Mandal : ", selectedMandal);
-    console.log("Village : ", selectedVillage);
-
     // Flatten all grievance arrays from the category keys
-    console.log(allGrievances);
     const allGrievancesjson = Object.values(allGrievances).flat();
     // Filtering logic
-    console.log(allGrievancesjson);
     const filteredGrievances = allGrievancesjson.filter((doc) => {
       // Apply filters only if respective values are selected
       const matchesAc = selectedAc ? doc.acId === selectedAc : true;
@@ -317,9 +323,6 @@ const GrievanceTable = () => {
       // All conditions must match
       return matchesAc && matchesMandal && matchesVillage && matchesCategory && matchesToekn;
     });
-
-    console.log("Filtered Grievances:", filteredGrievances);
-
     // Grouping the filtered grievances by category
     const groupedGrievances = filteredGrievances.reduce((acc, doc) => {
       const category = doc.category; // Default to "Uncategorized" if no category is found
@@ -329,10 +332,6 @@ const GrievanceTable = () => {
       acc[category].push(doc); // Add the document to the appropriate category
       return acc;
     }, {});
-
-    // Logging the grouped grievances
-    console.log("Grouped Grievances by Category:", groupedGrievances);
-
     // Updating the grievances state with the grouped data
     setGrievances(groupedGrievances);
   };
@@ -361,7 +360,7 @@ const GrievanceTable = () => {
           {acData[selectedAc] ? (
             <p>{acData[selectedAc].name}</p>
           ) : (
-            <p>Loading AC information...</p>
+            <p>AC Not Available</p>
           )}
         </>
       )}
@@ -428,7 +427,7 @@ const GrievanceTable = () => {
           <Col md={12}>
             <div className="category-section">
               <h4 className="category-title">{category}</h4>
-              <Table striped bordered hover>
+              <Table striped bordered hover className="equal-spacing-table">
                 <thead>
                   <tr>
                     <th>Category</th>
@@ -440,6 +439,7 @@ const GrievanceTable = () => {
                     <th>Phone Number</th>
                     <th>Edit</th>
                     <th>Delete</th>
+                    <th>Export</th>
                   </tr>
                 </thead>
                 <tbody>

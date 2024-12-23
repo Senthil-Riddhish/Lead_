@@ -16,7 +16,6 @@ const CMRF = ({
 
   useEffect(() => {
     if (assignedAc) {
-      console.log("acData : ", acData, formData);
       const selectedAcMandals = acData[assignedAc]?.mandals || {};
       let filteredMandals = Object.entries(selectedAcMandals).map(([mandalId, mandalInfo]) => ({
         id: mandalId,
@@ -28,16 +27,11 @@ const CMRF = ({
         name: mandalInfo.name,
         villages: mandalInfo.village || []
       })));
-      console.log(mandals);
       if (("cmrf" in formData) && ("mandal" in formData.cmrf)) {
         const filteredVillage = mandals.filter(ind => ind.id == formData.cmrf.mandal);
-        console.log(filteredVillage, formData.cmrf.mandal);
         if (filteredVillage.length > 0) {
           setVillages(filteredVillage[0].villages);
-          console.log(villages.some((element) => element._id == formData.cmrf.village), villages);
           if ((filteredVillage[0].villages).some((element) => element._id == formData.cmrf.village)) {
-            console.log("true")
-            console.log(formData.cmrf.mandal);
             setmandalselectedDropdown(formData.cmrf.mandal)
             setvillageselectedDropdown(formData.cmrf.village)
           }
@@ -89,13 +83,8 @@ const CMRF = ({
         village: villageId
       }
     };
-
     // Call the parent's onChange function with updated data
     onChange(updatedFormData);
-
-    // Logging to ensure proper updates
-    console.log("Updated Village ID:", villageId);
-    console.log("Updated formData:", updatedFormData);
   };
   const handleAadharInputChange = (e) => {
     let { value } = e.target;

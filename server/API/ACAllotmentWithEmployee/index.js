@@ -6,7 +6,8 @@ const router = express.Router();
 router.post('/add-allotment', async (req, res) => {
   try {
     const { employeeId, acId } = req.body;
-
+    console.log(employeeId, acId);
+    
     // Check if the employee exists
     const employee = await EmployeeModel.findById(employeeId);
     if (!employee) {
@@ -15,24 +16,25 @@ router.post('/add-allotment', async (req, res) => {
 
     // Check if the AC exists
     const ac = await AC.findById(acId);
+    console.log(ac);
     if (!ac) {
       return res.status(404).json({ message: 'AC (Assembly Constituency) not found' });
     }
 
     // Check if the employee has already been assigned to the any AC
     const existingAllotment = await Allotment.findOne({ employee: employeeId});
-    console.log(existingAllotment);
-    const existingac = await AC.findById(existingAllotment.ac);
-    if (existingAllotment) {
+    console.log("n",existingAllotment);
+    if(existingAllotment){
+      const existingac = await AC.findById(existingAllotment.ac);
       return res.status(403).json({
         message: `EMPLOYEE '${employee.name}' HAS ALREADY BEEN ASSIGNED WITH ${existingac.name}`
       });
     }
-
+    console.log("going to");
     // Create new allotment
     const newAllotment = new Allotment({
       employee: employeeId,
-      ac: acId
+      ac: ac._id
     });
 
     // Save to database
@@ -47,6 +49,7 @@ router.post('/add-allotment', async (req, res) => {
 
   } catch (error) {
     // Handle validation or other errors
+    console.log(error.message);
     return res.status(error.statusCode || 500).json({
       message: error.message || 'Internal server error'
     });

@@ -45,9 +45,8 @@ const LetterRequestForm = () => {
     const initializePage = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        console.log(token);
         if (!token) {
-          navigate('/login');
+          window.location.reload();
         } else {
           const tokenResponse = await axios.post('http://localhost:8000/auth/getTokeninfo', { token });
           const { userId, role } = tokenResponse.data;
@@ -64,37 +63,38 @@ const LetterRequestForm = () => {
           }
         }
       } catch (error) {
-        console.error('Error initializing page:', error);
+        sessionStorage.removeItem('token');
         navigate('/login');
+        window.location.reload();
       } finally {
         setLoading(false); // Set loading to false after all requests complete
       }
     };
 
     initializePage();
-  }, [navigate, grievanceId]);
-  useEffect(() => {
-    console.log("Updated formData:", formData);
-  }, [formData]);
+  }, [grievanceId]);
 
   const fetchGrievanceData = async (grievanceId) => {
     try {
       const response = await axios.get(`http://localhost:8000/grievances/getdocument/${grievanceId}`);
       const letterRequestData = response.data.letterRequest;
-      console.log("letterRequestData: ", letterRequestData);
-
       setFormData(letterRequestData);
       if (letterRequestData.acId) {
         setSelectedAc(letterRequestData.acId);
         if (letterRequestData.mandalId) setSelectedMandal(letterRequestData.mandalId);
         if (letterRequestData.villageId) setSelectedVillage(letterRequestData.villageId);
-        console.log(selectedMandal, selectedVillage);
       }
       setSelectedCategory(letterRequestData.category);
 
       await fetchAllAcData(letterRequestData.acId, letterRequestData.mandalId, letterRequestData.villageId);
     } catch (error) {
-      console.error('Error fetching grievance data:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `Error in fetching Data`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
@@ -116,8 +116,14 @@ const LetterRequestForm = () => {
       const acDetails = await axios.get('http://localhost:8000/ac/getAll-ac');
       createAcMap(acDetails.data, allotedACId);
     } catch (error) {
-      console.error('Error fetching AC details:', error);
       setIsAcAllocated(false); // Handle the error as "AC not allocated"
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `Error fetching AC details`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
@@ -126,7 +132,13 @@ const LetterRequestForm = () => {
       const { data } = await axios.get('http://localhost:8000/ac/getAll-ac');
       createAcMap(data, allotedACId, allocatedMandalId, allocatedVillageId);
     } catch (error) {
-      console.error('Error fetching all AC data:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `Error in fetching AC details`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   };
 
@@ -157,7 +169,6 @@ const LetterRequestForm = () => {
   const handleAcChange = (e) => {
     const acId = e.target.value;
     setSelectedAc(acId);
-    console.log("selected ac : ", selectedAc);
     setMandals(Object.keys(acData[acId]?.mandals || {}));
     let arr = [];
     setFormData({
@@ -177,7 +188,6 @@ const LetterRequestForm = () => {
 
   const handleMandalChange = (e) => {
     const mandalId = e.target.value;
-    console.log(mandalId);
     setSelectedMandal(mandalId);
     setFormData({
       ...formData,
@@ -228,7 +238,6 @@ const LetterRequestForm = () => {
     if (!validateForm(formData)) {
       return
     }
-    console.log("before Form Data to Submit:", formData);
     // Determine whether to make a POST or PUT request
     const url = grievanceId
       ? `http://localhost:8000/grievances/${grievanceId}`
@@ -244,7 +253,6 @@ const LetterRequestForm = () => {
       },
     })
       .then((response) => {
-        console.log("Response:", response.data);
         setSelectedCategory('');
         setFormData({
           name: '',
@@ -272,7 +280,6 @@ const LetterRequestForm = () => {
         });
       })
       .catch((error) => {
-        console.error("Error submitting form:", error);
         Swal.fire({
           position: "top-end",
           icon: "error",
@@ -293,7 +300,6 @@ const LetterRequestForm = () => {
       case 'GrievanceRef':
         return <GrievanceRefForm formData={formData} onChange={setFormData} />;
       case 'CMRF':
-        { console.log(formData); }
         return <CmrfForm formData={formData} onChange={setFormData} userRole={tokenInfo.role}
           acData={acData}
           assignedAc={selectedAc} grievanceId={grievanceId} />;
@@ -318,7 +324,6 @@ const LetterRequestForm = () => {
   };
 
   const handleCategoryClick = (category) => {
-    console.log("Selected Category Before Update:", selectedCategory);
     const updatedFormData = { ...formData };
     switch (selectedCategory) {
       case 'GrievanceRef':
@@ -340,7 +345,6 @@ const LetterRequestForm = () => {
         delete updatedFormData['others'];
         break;
       default:
-        console.log("No action defined for this category");
         break;
     }
     updatedFormData.category = category;

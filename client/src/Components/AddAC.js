@@ -9,8 +9,6 @@ import { IoIosContact } from "react-icons/io";
 import { IoMdAdd } from "react-icons/io";
 
 function errorMessage(statusCode, error) {
-  console.log(statusCode, error);
-
   switch (statusCode) {
     case 400:
       return error.response.data.message
@@ -41,7 +39,13 @@ const AddAC = () => {
       const response = await axios.get('http://localhost:8000/ac/getAll-ac');
       setAcs(response.data.data);
     } catch (error) {
-      console.error('Error fetching ACs:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `AC Details could not be fetched.`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     } finally {
       setLoading(false);
     }
@@ -50,7 +54,6 @@ const AddAC = () => {
   const handleAddAC = async (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log(newAC);
     try {
       const response = await axios.post('http://localhost:8000/ac/add-ac', newAC);
       // Append the new AC data to the existing `acs` state
@@ -99,17 +102,11 @@ const AddAC = () => {
 
       if (result.isConfirmed) { // Proceed only if the user confirms
         try {
-          // Log the current AC and state for debugging
-          console.log("AC to delete:", ac);
-          console.log("Current ACs:", acs);
-
           // Send a DELETE request to the server
           const response = await axios.delete(`http://localhost:8000/allotment/delete-ac/${ac._id}`);
 
           // If the deletion is successful
           if (response.status === 200) {
-            console.log("Deletion successful:", response.data);
-
             // Filter out the deleted AC from the `acs` array
             const updatedACs = acs.filter((item) => item._id !== ac._id);
 
@@ -125,7 +122,6 @@ const AddAC = () => {
               showConfirmButton: false
             });
           } else {
-            console.error("Failed to delete AC. Status:", response.status);
             Swal.fire({
               title: "Error!",
               text: "Failed to delete the AC. Please try again.",
@@ -133,8 +129,6 @@ const AddAC = () => {
             });
           }
         } catch (error) {
-          console.error("Error while deleting AC:", error);
-
           // Show error alert
           Swal.fire({
             title: "Error!",
@@ -144,8 +138,6 @@ const AddAC = () => {
         }
       }
     } catch (error) {
-      console.error("Swal error or cancellation:", error);
-
       // Show error alert if something goes wrong with Swal or user cancels
       Swal.fire({
         position: "top-end",
@@ -191,7 +183,13 @@ const AddAC = () => {
         timer: 1500
       });
     } catch (error) {
-      console.error('Error updating AC:', error);
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: `Could not update AC details`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     } finally {
       setLoading(false);
     }

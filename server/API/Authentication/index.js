@@ -103,6 +103,12 @@ router.post('/getTokeninfo', async(req, res) => {
         // Access user information from the decoded token
         const userId = decoded.user;
         const role = decoded.role;
+        if (role) {
+          let existingEmployee = await EmployeeModel.findOne({ _id: userId });
+          if (!existingEmployee) {
+            return res.status(404).json({ message: 'Employee Record Not available' });
+          }
+        }
         return res.json({
           userId,
           role
