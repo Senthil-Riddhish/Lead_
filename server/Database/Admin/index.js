@@ -34,15 +34,12 @@ UserSchema.statics.findByEmailAndPassword = async ({ email, password }) => {
     const user = await UserModel.findOne({ email });
     if (!user) {
         // throw new ErrorResponse("User does not exist!", 401);
-        console.log("Employee");
-        
         const empdata = await EmployeeModel.findOne({ email });
         if (!empdata) {
             throw new ErrorResponse("Account does not exist!", 401);
         } else {
             const doesPasswordMatch = await bcrypt.compare(password, empdata.password);
             if (!doesPasswordMatch) throw new ErrorResponse("Invalid password!", 401);
-            console.log("employee");
             empdata["role"] = 1
             return empdata
         }
@@ -50,7 +47,6 @@ UserSchema.statics.findByEmailAndPassword = async ({ email, password }) => {
         // Compare password
         const doesPasswordMatch = await bcrypt.compare(password, user.password);
         if (!doesPasswordMatch) throw new ErrorResponse("Invalid password!", 401);
-        console.log("admin");
         user["role"] = 0
     }
   

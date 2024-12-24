@@ -17,25 +17,25 @@ router.delete('/delete-employee/:id', async (req, res) => {
   try {
     // Attempt to delete the employee
     const deletedEmployee = await EmployeeModel.findByIdAndDelete(id);
-    console.log(deletedEmployee, id);
+    //console.log(deletedEmployee, id);
 
     if (!deletedEmployee) {
-      console.error('Employee not found with ID:', id);
+      //console.error('Employee not found with ID:', id);
       return res.status(404).json({ message: 'Employee not found' });
     }
 
-    console.log('Deleted Employee:', deletedEmployee);
+    //console.log('Deleted Employee:', deletedEmployee);
 
     // Delete any associated allotment for the employee
     const deletedAllotments = await Allotment.deleteMany({ employee: id });
 
-    console.log('Deleted Allotments Count:', deletedAllotments.deletedCount);
+    //console.log('Deleted Allotments Count:', deletedAllotments.deletedCount);
 
     // Find related EmployeeGrievancesTrack document
     const grievancesTrack = await EmployeeGrievancesTrack.findOne({ employeeId: id });
-    console.log(grievancesTrack);
+    //console.log(grievancesTrack);
     if (grievancesTrack) {
-      console.log('Found GrievancesTrack:', grievancesTrack);
+      //console.log('Found GrievancesTrack:', grievancesTrack);
 
       const { grievanceCategories } = grievancesTrack;
 
@@ -44,7 +44,7 @@ router.delete('/delete-employee/:id', async (req, res) => {
         
         // Check if grievanceIds is an array
         if (!Array.isArray(grievanceIds)) {
-          console.warn(`Skipping non-array category: ${category}`);
+          //console.warn(`Skipping non-array category: ${category}`);
           continue;
         }
       
@@ -55,11 +55,9 @@ router.delete('/delete-employee/:id', async (req, res) => {
               referenceTrackingDocument: grievancesTrack._id,
               referenceGrievanceDocument: grievanceId,
             });
-            console.log(
-              `Deleted ${deletedTrackingDocs.deletedCount} tracking documents for grievance ID: ${grievanceId}`
-            );
+            //console.log(`Deleted ${deletedTrackingDocs.deletedCount} tracking documents for grievance ID: ${grievanceId}`);
           } catch (err) {
-            console.error(`Error deleting tracking documents for grievance ID: ${grievanceId}`, err);
+            //console.error(`Error deleting tracking documents for grievance ID: ${grievanceId}`, err);
           }
         }
       }      
@@ -70,18 +68,18 @@ router.delete('/delete-employee/:id', async (req, res) => {
 
     // Delete all records in LeaveHistory where employeeId matches
     const deletedLeaveHistory = await LeaveHistory.deleteMany({ employeeId: id });
-    console.log('Deleted LeaveHistory Count:', deletedLeaveHistory.deletedCount);
+    //console.log('Deleted LeaveHistory Count:', deletedLeaveHistory.deletedCount);
 
     // Delete all records in LeaveData where employeeId matches
     const deletedLeaveData = await LeaveData.deleteMany({ employeeId: id });
-    console.log('Deleted LeaveData Count:', deletedLeaveData.deletedCount);
+    //console.log('Deleted LeaveData Count:', deletedLeaveData.deletedCount);
 
     return res.status(200).json({
       message: 'Employee, related documents, and allotments deleted successfully',
       deletedAllotments: deletedAllotments.deletedCount,
     });
   } catch (error) {
-    console.error('Error deleting employee:', error);
+    //console.error('Error deleting employee:', error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 });
@@ -136,7 +134,7 @@ router.put('/edit-employee/:id', async (req, res) => {
     }
 
     // Generic error handling
-    console.error('Error updating employee:', error);
+    //console.error('Error updating employee:', error);
     return res.status(error.statusCode || 500).json({
       status: 'error',
       message: error.message || 'Internal server error',
@@ -212,7 +210,7 @@ router.get('/leave-data/:employeeId', async (req, res) => {
 
     // If the creation date is greater than the end date, set extraLeaves to 0
     if (creationDate > endMonthYear) {
-      console.log("creationDate > endMonthYear");
+      //console.log("creationDate > endMonthYear");
       extraLeaves = 0;
     }
 
@@ -261,7 +259,7 @@ router.get('/leave-data/:employeeId', async (req, res) => {
         }
       });
     }
-    console.log(filteredMonths, extraLeaves);
+    //console.log(filteredMonths, extraLeaves);
     res.json({ leaveData: filteredMonths, extraLeaves: leaveData ? leaveData.extraLeaves : 0 });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -271,7 +269,7 @@ router.get('/leave-data/:employeeId', async (req, res) => {
 router.post('/apply-leave', async (req, res) => {
   try {
     const { employeeId, date, type, purpose } = req.body;
-    console.log(employeeId, date, type, purpose);
+    //console.log(employeeId, date, type, purpose);
     // Parse the leave date and get current date
     const leaveDate = new Date(date);
     const currentDate = new Date();
@@ -280,15 +278,15 @@ router.post('/apply-leave', async (req, res) => {
     if (type === 'sick') {
       const previousDate = new Date(currentDate);
       previousDate.setDate(currentDate.getDate() - 1);
-      console.log(leaveDate, previousDate);
-      console.log(
-        leaveDate.getFullYear(),
-        previousDate.getFullYear(),
-        leaveDate.getMonth(),
-        previousDate.getMonth(),
-        leaveDate.getDate(),
-        previousDate.getDate()
-      );
+      //.log(leaveDate, previousDate);
+      // console.log(
+      //   leaveDate.getFullYear(),
+      //   previousDate.getFullYear(),
+      //   leaveDate.getMonth(),
+      //   previousDate.getMonth(),
+      //   leaveDate.getDate(),
+      //   previousDate.getDate()
+      // );
       if (
         leaveDate.getFullYear() !== previousDate.getFullYear() ||
         leaveDate.getMonth() !== previousDate.getMonth() ||
@@ -384,9 +382,9 @@ router.post('/apply-leave', async (req, res) => {
       monthData.casualLeave -= 1;
       monthData.totalLeaveLeft -= 1;
     } else if (type === 'extra' && leaveData.extraLeaves > 0) {
-      console.log('going inside');
+      //console.log('going inside');
       leaveData.extraLeaves -= 1;
-      console.log(leaveData.extraLeaves);
+      //console.log(leaveData.extraLeaves);
     } else {
       return res.status(400).json({ message: 'Not enough leave balance' });
     }
@@ -397,7 +395,7 @@ router.post('/apply-leave', async (req, res) => {
 
     // Save the updated leave data
     await leaveData.save();
-    console.log('Leave applied successfully....');
+    //console.log('Leave applied successfully....');
 
     // If leave history does not exist, create a new document
     if (!leaveHistory) {
@@ -416,7 +414,7 @@ router.post('/apply-leave', async (req, res) => {
 
     res.json({ message: 'Leave applied successfully' });
   } catch (error) {
-    console.log(error.message);
+    //console.log(error.message);
     res.status(500).json({ message: 'Server error', error });
   }
 });
@@ -426,7 +424,7 @@ router.get('/leave-history/:employeeId', async (req, res) => {
     const leaveHistory = await LeaveHistory.findOne({ employeeId }).populate('employeeId');
 
     if (!leaveHistory) {
-      return res.status(404).json({ message: 'Leave history not found for employee' });
+      return res.status(200).json({ message: 'Leave history not found for employee' });
     }
 
     res.json(leaveHistory.leaveHistory);
@@ -495,7 +493,7 @@ router.put('/cancel-leave/:employeeId/:leaveId', async (req, res) => {
 
     res.json({ message: 'Leave canceled and balances updated successfully' });
   } catch (error) {
-    console.error('Error in cancel-leave:', error);
+    //console.error('Error in cancel-leave:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -503,7 +501,7 @@ router.put('/cancel-leave/:employeeId/:leaveId', async (req, res) => {
 router.get('/getAllHistoryOfAllEmployees', async (req, res) => {
   try {
     const leaveHistory = await LeaveHistory.find().populate('employeeId', 'name'); // Populate to get employee names
-    console.log("leaveHistory",leaveHistory);
+    //console.log("leaveHistory",leaveHistory);
     const notApprovedLeaves = leaveHistory.reduce((acc, curr) => {
       const notApproved = curr.leaveHistory.filter(leave => leave.approved === "NOT YET APPROVED");
       if (notApproved.length > 0) {
@@ -515,10 +513,10 @@ router.get('/getAllHistoryOfAllEmployees', async (req, res) => {
       }
       return acc;
     }, []);
-    console.log("NOT YET APPROVED",notApprovedLeaves);
+    //console.log("NOT YET APPROVED",notApprovedLeaves);
     const approvedLeaves = leaveHistory.reduce((acc, curr) => {
       const approved = curr.leaveHistory.filter(leave => leave.approved === "APPROVED");
-      console.log(approved.length);
+      //console.log(approved.length);
       if (approved.length > 0) {
         acc.push(...approved.map(leave => ({
           ...leave.toObject(),
@@ -526,31 +524,26 @@ router.get('/getAllHistoryOfAllEmployees', async (req, res) => {
           employeeId: curr.employeeId._id
         })));
       }
-      console.log(123);
       return acc;
     }, []);
-    console.log("APPROVED", approvedLeaves);
+    //console.log("APPROVED", approvedLeaves);
     const rejectedLeaves = leaveHistory.reduce((acc, curr) => {
       const rejected = (curr.leaveHistory || []).filter(leave => leave.approved === "REJECTED");
-      console.log("rejected",rejected);
+      //console.log("rejected",rejected);
       if (rejected.length > 0) {
-        console.log(rejected.length);
+        //console.log(rejected.length);
         
-        console.log(curr.employeeId.name,curr.employeeId._id);
+        //console.log(curr.employeeId.name,curr.employeeId._id);
         
         acc.push(...rejected.map(leave => ({
           ...leave,
           employeeName: curr.employeeId.name,
           employeeId: curr.employeeId._id,
         })));
-        console.log(acc);
-        
       }
-      console.log("acc",acc);
-      
       return acc;
     }, []);
-    console.log(rejectedLeaves);
+    //console.log(rejectedLeaves);
     res.json({ notApprovedLeaves, approvedLeaves, rejectedLeaves });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
@@ -624,7 +617,7 @@ router.put('/reject-leave/:leaveId/:employeeId', async (req, res) => {
 
 router.put('/update-password/:id', async (req, res) => {
   const { password } = req.body;
-  console.log(password);
+  //console.log(password);
 
   try {
     const employee = await EmployeeModel.findById(req.params.id);
@@ -636,7 +629,7 @@ router.put('/update-password/:id', async (req, res) => {
 
     res.status(200).json({ message: 'Password updated successfully' });
   } catch (error) {
-    console.error('Error updating password:', error);
+    //console.error('Error updating password:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
@@ -649,7 +642,7 @@ router.get('/profile/:id', async (req, res) => {
     let user = await EmployeeModel.findById(userId).select('-password');
 
     if (!user) {
-      console.log("Not an employee");
+      //console.log("Not an employee");
 
       // If not found in EmployeeModel, search in UserModel
       user = await UserModel.findById(userId).select('-password');
@@ -663,7 +656,7 @@ router.get('/profile/:id', async (req, res) => {
     // Return the found user
     res.json(user);
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    //console.error('Error fetching user profile:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

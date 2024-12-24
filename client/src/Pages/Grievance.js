@@ -46,6 +46,7 @@ const LetterRequestForm = () => {
       try {
         const token = sessionStorage.getItem('token');
         if (!token) {
+          navigate('/login');
           window.location.reload();
         } else {
           const tokenResponse = await axios.post('http://localhost:8000/auth/getTokeninfo', { token });
@@ -64,7 +65,6 @@ const LetterRequestForm = () => {
         }
       } catch (error) {
         sessionStorage.removeItem('token');
-        navigate('/login');
         window.location.reload();
       } finally {
         setLoading(false); // Set loading to false after all requests complete
@@ -183,7 +183,13 @@ const LetterRequestForm = () => {
     });
     setMandals(arr);
     setSelectedMandal('');
+    setSelectedVillage('');
     setVillages([]);
+    setFormData({
+      ...formData,
+      mandalId: '',
+      villageId: ''
+    })
   };
 
   const handleMandalChange = (e) => {
@@ -191,8 +197,10 @@ const LetterRequestForm = () => {
     setSelectedMandal(mandalId);
     setFormData({
       ...formData,
-      mandalId: mandalId
+      mandalId: mandalId,
+      villageId: ''
     })
+    setSelectedVillage('');
     setVillages(acData[selectedAc]?.mandals[mandalId].village || []);
   };
 
@@ -247,7 +255,12 @@ const LetterRequestForm = () => {
     axios({
       method,
       url,
-      data: formData, // send formData as the request body
+      data: {
+        ...formData,
+        acId: selectedAc,
+        mandalId: selectedMandal,
+        villageId: selectedVillage
+      }, // send formData as the request body
       headers: {
         'Content-Type': 'application/json', // specify JSON content type
       },
@@ -373,7 +386,7 @@ const LetterRequestForm = () => {
         <Row className="align-items-center">
           <Col>
             <h6 className="text-primary fw-bold">
-              📅 Current Date: {new Date(currentDate).toLocaleDateString()}
+              📅 Current Date: {currentDate}
             </h6>
           </Col>
         </Row>

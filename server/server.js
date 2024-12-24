@@ -14,7 +14,6 @@ import ConnectDB from "./Database/connection";
 //application middlewares
 const port ="8000";
 const lead = express();
-console.log(process.env);
 lead.use(cors());
 lead.use(express.json());
 lead.use(express.urlencoded({ extended: false }));

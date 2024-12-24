@@ -44,10 +44,10 @@ router.post("/signup", async (req, res) => {
   router.post("/signin", async (req, res) => {
     try {
       await ValidateSignin(req.body.credentials);
-      console.log("validation completed");
+      //console.log("validation completed");
       
       const user = await UserModel.findByEmailAndPassword(req.body.credentials);
-        console.log(user);
+        //console.log(user);
         
       // Pass the role (0 or 1) to the token generation function
       const token = generateJwtToken(user._id.toString(), user.role); 
@@ -64,9 +64,9 @@ router.post("/signup", async (req, res) => {
 router.post("/create-emp", async(req,res)=>{
     try {
         await ValidateEmployee(req.body.credentials)
-        console.log("validation complete");
+        //console.log("validation complete");
         await EmployeeModel.findByEmailAndPhone(req.body.credentials)
-        console.log("findByEmailAndPhone complete");
+        //console.log("findByEmailAndPhone complete");
         const existingEmployee = await EmployeeModel.findOne({
           $or: [{ aadharId: req.body.credentials.aadharId }, { panId: req.body.credentials.panId },{epf: req.body.credentials.epf}]
         });
@@ -84,7 +84,7 @@ router.post("/create-emp", async(req,res)=>{
         const newEmp = EmployeeModel.create(req.body.credentials)
         return res.status(200).json({ message : "Employee Added Successfully", status: "success" });
     }catch(error){
-        console.log(error);
+        //console.log(error);
         const statusCode = error.statusCode || 500; // Default to 500 if no status code is provided
         const message = error.message || "Internal Server Error";
         return res.status(statusCode).json({ message: message });
@@ -94,9 +94,9 @@ router.post("/create-emp", async(req,res)=>{
 
 router.post('/getTokeninfo', async(req, res) => {
   // Now you can access userId and role
-  console.log(req.body);
+  //console.log(req.body);
   const token = req.body.token;
-  console.log(token);
+  //console.log(token);
   try {
         // Replace 'YOUR_SECRET_KEY' with your actual secret key
         const decoded = jwt.verify(token, 'LeadContactByElection');

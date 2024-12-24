@@ -66,13 +66,7 @@ const AllotmentComponent = () => {
         setAllotments(response.data.allotments);
       })
       .catch(error => {
-        Swal.fire({
-          position: "top-end",
-          icon: "error",
-          title: `Error in fetching allotments`,
-          showConfirmButton: false,
-          timer: 1500
-        });
+        return
       });
   };
 
@@ -100,6 +94,25 @@ const AllotmentComponent = () => {
               text: error.response.data.message
             });
         }
+      });
+  };
+
+  const handleDeleteAllotment = (employeeId) => {
+    axios.delete(`http://localhost:8000/allotment/delete-allotment/${employeeId}`)
+      .then(() => {
+        Swal.fire({
+          title: "Allotment Deleted Successfully!",
+          icon: "success"
+        });
+        setAllotments(prev => prev.filter(allotment => allotment.employee !== employeeId));
+      })
+      .catch(() => {
+        Swal.fire({
+          title: "Failed to Delete Allotment",
+          icon: "error",
+          showConfirmButton: false,
+          timer: 1500
+        });
       });
   };
 
@@ -160,6 +173,11 @@ const AllotmentComponent = () => {
                 <tr key={allotment._id}>
                   <td>{acMap[allotment.ac]}</td>
                   <td>{employeeMap[allotment.employee]}</td>
+                  <Button
+                    className='m-1'
+                    style={{ backgroundColor: '#FF7F7F', border: 'none' }}
+                    onClick={() => handleDeleteAllotment(allotment.employee)}
+                  >Delete</Button>
                 </tr>
               ))}
             </tbody>

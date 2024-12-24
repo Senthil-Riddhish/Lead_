@@ -15,7 +15,7 @@ const AttendancePlanner = () => {
             try {
                 const token = sessionStorage.getItem('token');
                 if (!token) {
-                    //navigate('/login');
+                    navigate('/login');
                     window.location.reload();
                 } else {
                     const tokenResponse = await axios.post(
@@ -33,7 +33,6 @@ const AttendancePlanner = () => {
                 }
             } catch (error) {
                 sessionStorage.removeItem('token');
-                navigate('/login');
                 window.location.reload();
             } finally {
                 setLoading(false);

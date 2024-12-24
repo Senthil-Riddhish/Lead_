@@ -6,7 +6,7 @@ const router = express.Router();
 router.post('/add-allotment', async (req, res) => {
   try {
     const { employeeId, acId } = req.body;
-    console.log(employeeId, acId);
+    //console.log(employeeId, acId);
     
     // Check if the employee exists
     const employee = await EmployeeModel.findById(employeeId);
@@ -16,21 +16,21 @@ router.post('/add-allotment', async (req, res) => {
 
     // Check if the AC exists
     const ac = await AC.findById(acId);
-    console.log(ac);
+    //console.log(ac);
     if (!ac) {
       return res.status(404).json({ message: 'AC (Assembly Constituency) not found' });
     }
 
     // Check if the employee has already been assigned to the any AC
     const existingAllotment = await Allotment.findOne({ employee: employeeId});
-    console.log("n",existingAllotment);
+    //console.log("n",existingAllotment);
     if(existingAllotment){
       const existingac = await AC.findById(existingAllotment.ac);
       return res.status(403).json({
         message: `EMPLOYEE '${employee.name}' HAS ALREADY BEEN ASSIGNED WITH ${existingac.name}`
       });
     }
-    console.log("going to");
+    //console.log("going to");
     // Create new allotment
     const newAllotment = new Allotment({
       employee: employeeId,
@@ -49,7 +49,7 @@ router.post('/add-allotment', async (req, res) => {
 
   } catch (error) {
     // Handle validation or other errors
-    console.log(error.message);
+    //console.log(error.message);
     return res.status(error.statusCode || 500).json({
       message: error.message || 'Internal server error'
     });
@@ -64,9 +64,10 @@ router.get('/getAll-employees', async (req, res) => {
 
     // Check if employees are found
     if (employees.length === 0) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'No employees found'
+      return res.status(200).json({
+        status: 'success',
+        message: 'No employees Added',
+        employees: []
       });
     }
 
@@ -89,9 +90,10 @@ router.get('/allotments', async (req, res) => {
   try {
     const allotments = await Allotment.find();
     if (allotments.length === 0) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'No allotments found'
+      return res.status(200).json({
+        status: 'success',
+        message: 'No allotments found',
+        allotments: []
       });
     }
 
@@ -119,7 +121,7 @@ router.get('/employee-allotment/:employeeId', async (req, res) => {
     if (!allotment) {
       return res.status(200).json({ message: 'No allotment found for the specified employee' });
     }
-    console.log(allotment);
+    //console.log(allotment);
     // Respond with the AC ID and additional AC information
     return res.status(200).json({
       status: 'success',
@@ -169,7 +171,7 @@ router.delete('/delete-ac/:acId', async (req, res) => {
     // Respond with success
     res.status(200).json({ message: 'AC and related data successfully deleted' });
   } catch (error) {
-    console.error('Error while deleting AC and related data:', error);
+    //console.error('Error while deleting AC and related data:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -226,7 +228,7 @@ router.delete('/delete-mandal/:mandalId/:acId', async (req, res) => {
 
     res.status(200).json({ message: "Mandal and associated documents deleted successfully" });
   } catch (error) {
-    console.error("Error deleting mandal:", error);
+    //console.error("Error deleting mandal:", error);
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });
@@ -288,10 +290,53 @@ router.delete('/delete-village/:villageId/:mandalId/:acId', async (req, res) => 
 
     res.status(200).json({ message: "Mandal and associated documents deleted successfully" });
   } catch (error) {
-    console.error("Error deleting village:", error);
+    //console.error("Error deleting village:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
+router.delete('/delete-allotment/:employeeId', async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    // Step 1: Delete allotment associated with employeeId
+    const allotment = await Allotment.findOneAndDelete({ employee: employeeId });
+    if (!allotment) {
+      return res.status(404).json({ message: 'Allotment not found' });
+    }
+
+    // Step 2: Find the EmployeeGrievancesTrack document for the employeeId
+    const employeeTrack = await EmployeeGrievancesTrack.findOne({ employeeId });
+    if (!employeeTrack) {
+      return res.status(404).json({ message: 'Employee grievances track not found' });
+    }
+
+    // Step 3: Iterate over each grievance category and delete associated documents in AssignedwithTrackingDocument
+    const grievanceCategories = employeeTrack.grievanceCategories;
+
+    for (const category in grievanceCategories) {
+      const grievanceIds = grievanceCategories[category];
+
+      // Ensure grievanceIds is an array before iterating
+      if (Array.isArray(grievanceIds)) {
+        for (const grievanceId of grievanceIds) {
+          await AssignedwithTrackingDocument.findOneAndDelete({
+            referenceGrievanceDocument: grievanceId,
+          });
+        }
+      } else {
+        console.warn(`Skipping category ${category} as it is not an array.`);
+      }
+    }
+
+    // Step 4: Delete the EmployeeGrievancesTrack document for the employeeId
+    await EmployeeGrievancesTrack.findOneAndDelete({ employeeId });
+
+    // Final response
+    return res.status(200).json({ message: 'Allotment and related data deleted successfully' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 module.exports = router;

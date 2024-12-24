@@ -107,7 +107,6 @@ const letterRequestSchema = new mongoose.Schema({
 // Pre-save middleware for updating daily count and assigning token
 // Pre-save middleware
 letterRequestSchema.pre('save', async function (next) {
-  console.log("pre save function");
   try {
     // Get the global current date in the desired format
     const now = new Date();
@@ -135,10 +134,8 @@ letterRequestSchema.pre('save', async function (next) {
     }
     // Assign the token based on the formatted date and count
     this.token = `${getacName.name}/${getacName.PCId}/${getshortForm}/${formattedNow.replace(/\//g, '')}/${formattedCount}`;
-    console.log(this.token, getacName.name, getacName.PCId, formattedCount, formattedNow.replace(/\//g, ''));
     next(); // Proceed with saving the document
   } catch (error) {
-    console.error('Error in pre-save middleware:', error);
     next(error); // Pass the error to the next middleware
   }
 });

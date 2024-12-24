@@ -28,7 +28,6 @@ const employeeSchema = new mongoose.Schema({
 
 employeeSchema.statics.findByEmailAndPhone = async ({ email, phoneNumber }) => {
     // check whether email exist
-    console.log(email, phoneNumber);
     const checkUserByEmail = await UserModel.findOne({ email });
     const checkUserByPhone = await UserModel.findOne({ phoneNumber });
     const checkEmplyByEmail = await EmployeeModel.findOne({ email });

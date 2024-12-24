@@ -34,8 +34,9 @@ const GrievanceTable = () => {
       try {
         const token = sessionStorage.getItem('token');
         if (!token) {
+          navigate('/login');
           window.location.reload();
-          return; // Exit to prevent further execution
+          return;
         }
 
         const tokenResponse = await axios.post('http://localhost:8000/auth/getTokeninfo', { token });
@@ -49,11 +50,9 @@ const GrievanceTable = () => {
         } else if (role === 0) {
           await fetchAllAcData();
         }
-
         await fetchGrievances(userId, role);
       } catch (error) {
         sessionStorage.removeItem('token'); // Clear token on error
-        navigate('/login');
         window.location.reload();
       } finally {
         setLoading(false); // Ensure loading state is cleared
@@ -275,9 +274,10 @@ const GrievanceTable = () => {
     }
   };
 
-  const renderGrievanceRows = (grievanceCategory) => {
+  const renderGrievanceRows = (grievanceCategory, startIndex) => {
     return grievanceCategory.map((grievance, index) => (
       <tr key={index}>
+        <td>{startIndex + index}</td>
         <td>{grievance.category}</td>
         <td>{grievance.token}</td>
         <td>{grievance.name}</td>
@@ -286,10 +286,7 @@ const GrievanceTable = () => {
         <td>{villageMap.get(grievance.villageId)}</td>
         <td>{grievance.phoneNumber}</td>
         <td>
-          <Button
-            variant="primary"
-            onClick={() => handleEdit(grievance._id)}
-          >
+          <Button variant="primary" onClick={() => handleEdit(grievance._id)}>
             Edit
           </Button>
         </td>
@@ -302,7 +299,12 @@ const GrievanceTable = () => {
           </Button>
         </td>
         <td>
-          <JsonToPdf jsonData={grievance} acName={acMap} mandalName={mandalMap} villageName={villageMap} />
+          <JsonToPdf
+            jsonData={grievance}
+            acName={acMap}
+            mandalName={mandalMap}
+            villageName={villageMap}
+          />
         </td>
       </tr>
     ));
@@ -422,34 +424,38 @@ const GrievanceTable = () => {
           </Button>
         </Col>
       </Row>
-      {Object.keys(grievances).map((category, idx) => (
-        <Row key={idx} className="mb-4">
-          <Col md={12}>
-            <div className="category-section">
-              <h4 className="category-title">{category}</h4>
-              <Table striped bordered hover className="equal-spacing-table">
-                <thead>
-                  <tr>
-                    <th>Category</th>
-                    <th>Token</th>
-                    <th>Name</th>
-                    <th>AC</th>
-                    <th>Mandal</th>
-                    <th>Village</th>
-                    <th>Phone Number</th>
-                    <th>Edit</th>
-                    <th>Delete</th>
-                    <th>Export</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {renderGrievanceRows(grievances[category])}
-                </tbody>
-              </Table>
-            </div>
-          </Col>
-        </Row>
-      ))}
+      {Object.keys(grievances).reduce((acc, category, categoryIdx) => {
+        const rows = renderGrievanceRows(grievances[category], acc.currentIndex);
+        acc.currentIndex += grievances[category].length;
+        acc.elements.push(
+          <Row key={categoryIdx} className="mb-4">
+            <Col md={12}>
+              <div className="category-section">
+                <h4 className="category-title">{category}</h4>
+                <Table striped bordered hover className="equal-spacing-table">
+                  <thead>
+                    <tr>
+                      <th>SNo</th>
+                      <th>Category</th>
+                      <th>Token</th>
+                      <th>Name</th>
+                      <th>AC</th>
+                      <th>Mandal</th>
+                      <th>Village</th>
+                      <th>Phone Number</th>
+                      <th>Edit</th>
+                      <th>Delete</th>
+                      <th>Export</th>
+                    </tr>
+                  </thead>
+                  <tbody>{rows}</tbody>
+                </Table>
+              </div>
+            </Col>
+          </Row>
+        );
+        return acc;
+      }, { elements: [], currentIndex: 1 }).elements}
     </Container>
   );
 };

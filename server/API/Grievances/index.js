@@ -48,7 +48,7 @@ router.post('/:employeeId/:category/:role', async (req, res) => {
     });
 
     if (existingRecord) {
-      console.log(existingRecord);
+      //console.log(existingRecord);
       return res.status(400).json({
         message: 'A document with the same aadharId, phoneNumber already exists',
       });
@@ -89,7 +89,7 @@ router.post('/:employeeId/:category/:role', async (req, res) => {
       letterRequest: savedLetterRequest,
     });
   } catch (error) {
-    console.error('Error adding letter request:', error);
+    //console.error('Error adding letter request:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 });
@@ -102,8 +102,6 @@ router.post('/:employeeId/:category/:role', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { aadharId, phoneNumber, token } = req.body;
-  console.log("put request");
-
   try {
     // Fetch the existing LetterRequest document
     const alreadyStoredDocument = await LetterRequest.findById(id);
@@ -111,7 +109,6 @@ router.put('/:id', async (req, res) => {
     if (!alreadyStoredDocument) {
       return res.status(404).json({ message: "Document not Found" });
     }
-
     // Check if `acId` has changed
     if (alreadyStoredDocument.acId != req.body.acId) {
       // Find the AssignedwithTrackingDocument associated with this LetterRequest
@@ -128,22 +125,21 @@ router.put('/:id', async (req, res) => {
         if (grievanceTracking) {
           // Remove the `id` from the old category array
           const categoryArray =
-            grievanceTracking.grievanceCategories[alreadyStoredDocument.category] || [];
+            grievanceTracking.grievanceCategories[alreadyStoredDocument.category] || [];        
           grievanceTracking.grievanceCategories[alreadyStoredDocument.category] = categoryArray.filter(
             (docId) => docId.toString() !== id
           );
-
           // Save the updated grievance tracking document
           await grievanceTracking.save();
         }
 
         // Optionally, you might also want to delete the AssignedwithTrackingDocument if necessary
-        await AssignedwithTrackingDocument.deleteOne({
+        var result = await AssignedwithTrackingDocument.deleteOne({
           referenceGrievanceDocument: id,
         });
       }
     } else if (alreadyStoredDocument.category != req.body.category) {
-      console.log("category not common");
+      //console.log("category not common");
       const assignedTrackingDoc = await AssignedwithTrackingDocument.findOne({
         referenceGrievanceDocument: id,
       });
@@ -154,12 +150,12 @@ router.put('/:id', async (req, res) => {
           assignedTrackingDoc.referenceTrackingDocument
         );
         if (grievanceTracking) {
-          console.log("grievanceTracking : ", grievanceTracking);
+          //console.log("grievanceTracking : ", grievanceTracking);
 
           // Remove the `id` from the old category array
           const oldCategoryArray =
             grievanceTracking.grievanceCategories[alreadyStoredDocument.category] || [];
-          console.log("oldCategoryArray : ", oldCategoryArray);
+          //console.log("oldCategoryArray : ", oldCategoryArray);
           grievanceTracking.grievanceCategories[alreadyStoredDocument.category] = oldCategoryArray.filter(
             (docId) => docId.toString() !== id
           );
@@ -180,7 +176,7 @@ router.put('/:id', async (req, res) => {
     });
 
     if (existingRecord && existingRecord._id.toString() !== id) {
-      console.log(existingRecord);
+      //console.log(existingRecord);
       return res.status(400).json({
         message: 'A document with the same aadharId or phoneNumber already exists',
       });
@@ -202,14 +198,14 @@ router.put('/:id', async (req, res) => {
 
     res.status(200).json({ message: "Successfully Updated" });
   } catch (error) {
-    console.error("Error updating letter request:", error);
+    //console.error("Error updating letter request:", error);
     res.status(500).json({ message: "Server error", error });
   }
 });
 
 router.get('/getdocuments/:employeeId/:role', async (req, res) => {
   const { employeeId, role } = req.params;
-  console.log(employeeId, role);
+  //console.log(employeeId, role);
 
   try {
     if (role === '0') {
@@ -232,7 +228,7 @@ router.get('/getdocuments/:employeeId/:role', async (req, res) => {
         if (categorizedGrievances[category]) {
           categorizedGrievances[category].push(doc);
         } else {
-          console.log("Dosent match with any category");
+          //console.log("Dosent match with any category");
           //categorizedGrievances.Others.push(doc); // Default to "Others" if category doesn't match
         }
       });
@@ -244,7 +240,7 @@ router.get('/getdocuments/:employeeId/:role', async (req, res) => {
     } else {
       // Default functionality for other roles
       const employeeGrievances1 = await EmployeeGrievancesTrack.findOne({ employeeId })
-      console.log(employeeGrievances1);
+      //console.log(employeeGrievances1);
       if (!employeeGrievances1) {
         return res.status(200).json({ grievanceCategories: {} })
       }
@@ -260,11 +256,11 @@ router.get('/getdocuments/:employeeId/:role', async (req, res) => {
       if (!employeeGrievances) {
         return res.status(404).json({ message: 'Grievances not found for this employee' });
       }
-      console.log("employeeGrievances : ", employeeGrievances);
+      //console.log("employeeGrievances : ", employeeGrievances);
       res.json(employeeGrievances);
     }
   } catch (error) {
-    console.error('Error retrieving grievances:', error);
+    //console.error('Error retrieving grievances:', error);
     return res.status(500).json({ message: 'Error retrieving grievances' });
   }
 });
@@ -285,7 +281,7 @@ router.get('/getdocument/:id', async (req, res) => {
     // Return the letter request data
     res.status(200).json({ message: 'Letter request retrieved successfully', letterRequest });
   } catch (error) {
-    console.error('Error retrieving letter request:', error);
+    //console.error('Error retrieving letter request:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 });
@@ -293,12 +289,11 @@ router.get('/getdocument/:id', async (req, res) => {
 // DELETE Grievance Router
 router.get('/delete-grievance/:id', async (req, res) => {
   const { id } = req.params;
-  console.log(id);
   try {
     // Step 1: Find and delete the grievance document in LetterRequest
     const grievanceDoc = await LetterRequest.findByIdAndDelete(id);
     if (!grievanceDoc) {
-      console.log(grievanceDoc);
+      //console.log(grievanceDoc);
       return res.status(404).json({ message: 'Grievance not found' });
     }
 
@@ -314,7 +309,7 @@ router.get('/delete-grievance/:id', async (req, res) => {
       { $inc: { count: -1 } }, // Decrease count by 1
       { new: true } // Return the updated document
     );
-    console.log(dailyCountDoc);
+    //console.log(dailyCountDoc);
 
     // Step 2: Find and delete the related document in AssignedwithTrackingDocument
     const trackingDoc = await AssignedwithTrackingDocument.findOneAndDelete({ referenceGrievanceDocument: id });
@@ -335,7 +330,7 @@ router.get('/delete-grievance/:id', async (req, res) => {
 
     return res.status(200).json({ message: 'Grievance and related data deleted successfully' });
   } catch (error) {
-    console.error('Error deleting grievance:', error);
+    //console.error('Error deleting grievance:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -370,7 +365,7 @@ router.get('/consolidated-data/:userId/:role', async (req, res) => {
         if (categorizedGrievances[category]) {
           categorizedGrievances[category].push(doc);
         } else {
-          console.log("Doesn't match with any category");
+          //console.log("Doesn't match with any category");
         }
       });
 
@@ -423,7 +418,7 @@ router.get('/consolidated-data/:userId/:role', async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Error:', error);
+    //console.error('Error:', error);
     return res.status(500).json({
       status: 'error',
       message: 'Internal server error',

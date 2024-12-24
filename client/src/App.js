@@ -99,7 +99,7 @@ const App = () => {
           setUserInfo({ userId, role });
         }
       } catch (error) {
-        console.error('Error initializing page:', error);
+        sessionStorage.removeItem('token');
         navigate('/login');
       }
     };
@@ -110,7 +110,7 @@ const App = () => {
   const handleLogout = () => {
     sessionStorage.removeItem('token'); // Remove token from sessionStorage
     setIsAuthenticated(false); // Update auth state
-    navigate("/login"); // Redirect to login page
+    navigate("/login");
     Swal.fire({
       position: "top-end",
       icon: "success",
@@ -158,8 +158,7 @@ const App = () => {
                 {!userInfo.role && <Route path="/employee" element={<EmployeeManagement />} />}
                 <Route path="/grievances" element={<Grievances />} />
                 <Route path="/hrplanner" element={<AttendancePlanner />} />
-                <Route path="/allrecords" element={<GrievanceTable />} />
-                <Route path="*" element={<Navigate to="/home" replace />} />
+                <Route path="/allrecords" element={<GrievanceTable />} /> 
               </Routes>
             </Col>
           </Row>

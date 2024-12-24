@@ -23,7 +23,6 @@ const Home = () => {
       try {
         const token = sessionStorage.getItem('token');
         if (!token) {
-          //navigate('/login');
           window.location.reload();
         } else {
           const tokenResponse = await axios.post(
@@ -42,7 +41,6 @@ const Home = () => {
         }
       } catch (error) {
         sessionStorage.removeItem('token');
-        navigate('/login');
         window.location.reload();
       } finally {
         setLoading(false);
@@ -114,34 +112,36 @@ const Home = () => {
         {/* Charts in one row */}
         <Col xs={12} md={6} className="mb-4">
           <div className="chart-card" style={{ height: '400px' }}>
-            <h3 style={{textAlign:"center"}}>Grievance Distribution</h3>
+            <h3 style={{ textAlign: "center" }}>Grievance Distribution</h3>
             {/* Pie Chart with legend below */}
             <Pie data={pieChartData} options={pieChartOptions} width={40} height={30} />
           </div>
         </Col>
         <Col xs={12} md={6}>
-          <div className="chart-card"  style={{ height: '400px' }}>
-            <h3 style={{textAlign:"center"}}>Grievance Counts by Category</h3>
+          <div className="chart-card" style={{ height: '400px' }}>
+            <h3 style={{ textAlign: "center" }}>Grievance Counts by Category</h3>
             {/* Bar Chart */}
             <Bar data={barChartData} width={40} height={30} />
           </div>
         </Col>
       </Row>
-      <Row className="mb-4">
+      <Row className="mt-4" style={{ justifyContent: 'center'}}>
         <Col xs={12} md={6} className="mb-4">
           <div className="card shadow-lg p-3 text-center">
             <h3 className="text-center">Total Records</h3>
             <div className="card-value">{totalRecords}</div>
           </div>
         </Col>
-        <Col xs={12} md={6}>
-          <div className="card shadow-lg p-3 text-center">
-            <h3 className="text-center">Total Employees</h3>
-            <div className="card-value">{totalEmployees}</div>
-          </div>
-        </Col>
+        {(!userInfo.role)
+          ?
+          <Col xs={12} md={6}>
+            <div className="card shadow-lg p-3 text-center">
+              <h3 className="text-center">Total Employees</h3>
+              <div className="card-value">{totalEmployees}</div>
+            </div>
+          </Col>
+          : null}
       </Row>
-
       <Row>
         {grievanceCounts.map(({ category, count }, index) => (
           <Col xs={12} md={4} key={index} className="mb-4">

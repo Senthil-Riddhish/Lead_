@@ -36,13 +36,7 @@ const LeaveManagement = ({ employeeId }) => {
                 const response = await axios.get(`http://localhost:8000/employee/leave-history/${employeeId}`);
                 setLeaveHistory(response.data);
             } catch (err) {
-                Swal.fire({
-                    position: "top-end",
-                    icon: "error",
-                    title: `Error in fetching leave history. Please try again.`,
-                    showConfirmButton: false,
-                    timer: 1500
-                });
+                return
             }
         };
 
