@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Button, Form, Container, Navbar } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import './Login.css'; // Import CSS for styling
 import logo from '../Images/leadlogo.PNG';
@@ -8,7 +9,7 @@ import logo from '../Images/leadlogo.PNG';
 const Login = ({ setIsAuthenticated }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const navigate = useNavigate();
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -29,6 +30,7 @@ const Login = ({ setIsAuthenticated }) => {
           showConfirmButton: false,
           timer: 1500,
         });
+        navigate('/home');
       } else {
         Swal.fire({
           position: 'top-end',

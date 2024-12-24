@@ -1,6 +1,6 @@
 //Sv02RDzCvIA6ctqX
 import mongoose from "mongoose";
-
+require("dotenv").config();
 export default async () => {
-  return mongoose.connect("mongodb+srv://Sujith:Sv02RDzCvIA6ctqX@cluster0.g3igd2e.mongodb.net/LeadDB?retryWrites=true&w=majority&appName=Cluster0", {});
+  return mongoose.connect(process.env.MONGO_URI, {});
 };

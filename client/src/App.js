@@ -158,7 +158,7 @@ const App = () => {
                 {!userInfo.role && <Route path="/employee" element={<EmployeeManagement />} />}
                 <Route path="/grievances" element={<Grievances />} />
                 <Route path="/hrplanner" element={<AttendancePlanner />} />
-                <Route path="/allrecords" element={<GrievanceTable />} /> 
+                <Route path="/allrecords" element={<GrievanceTable />} />
               </Routes>
             </Col>
           </Row>
