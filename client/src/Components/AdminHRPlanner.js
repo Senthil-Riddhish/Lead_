@@ -42,7 +42,7 @@ const AdminLeaveApproval = () => {
       Swal.fire({
         position: "top-end",
         icon: "error",
-        title: `Error in approving leave. Please try again.`,
+        title: `Leave has been cancelled by the Employee.`,
         showConfirmButton: false,
         timer: 1500
       });
@@ -65,7 +65,7 @@ const AdminLeaveApproval = () => {
       Swal.fire({
         position: "top-end",
         icon: "error",
-        title: `Error rejecting leave. Please try again.`,
+        title: `Leave has been cancelled by the Employee.`,
         showConfirmButton: false,
         timer: 1500
       });

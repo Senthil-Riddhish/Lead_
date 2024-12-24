@@ -41,13 +41,13 @@ router.delete('/delete-employee/:id', async (req, res) => {
 
       for (const category in grievanceCategories) {
         const grievanceIds = grievanceCategories[category];
-        
+
         // Check if grievanceIds is an array
         if (!Array.isArray(grievanceIds)) {
           //console.warn(`Skipping non-array category: ${category}`);
           continue;
         }
-      
+
         for (const grievanceId of grievanceIds) {
           try {
             // Delete documents in AssignedwithTrackingDocument referencing this grievance ID
@@ -60,7 +60,7 @@ router.delete('/delete-employee/:id', async (req, res) => {
             //console.error(`Error deleting tracking documents for grievance ID: ${grievanceId}`, err);
           }
         }
-      }      
+      }
 
       // Delete the EmployeeGrievancesTrack document
       await EmployeeGrievancesTrack.findByIdAndDelete(grievancesTrack._id);
@@ -450,9 +450,14 @@ router.put('/cancel-leave/:employeeId/:leaveId', async (req, res) => {
     if (!leave) {
       return res.status(404).json({ message: 'Leave not found' });
     }
-
+    if (leave.approved !== 'NOT YET APPROVED') {
+      if (leave.approved === 'APPROVED') {
+        return res.status(409).json({ message: 'Cannot cancel an approved leave.Please reload to see the updated Status' });
+      } else {
+        return res.status(409).json({ message: 'Cannot cancel a rejected leave.Please reload to see the updated Status' });
+      }
+    }
     const { type, date } = leave;
-
     // Remove the leave from the leaveHistory array
     leaveHistory.leaveHistory = leaveHistory.leaveHistory.filter(
       (entry) => entry._id.toString() !== leaveId
@@ -532,9 +537,9 @@ router.get('/getAllHistoryOfAllEmployees', async (req, res) => {
       //console.log("rejected",rejected);
       if (rejected.length > 0) {
         //console.log(rejected.length);
-        
+
         //console.log(curr.employeeId.name,curr.employeeId._id);
-        
+
         acc.push(...rejected.map(leave => ({
           ...leave,
           employeeName: curr.employeeId.name,
