@@ -57,3 +57,40 @@
     text-align: center;
     padding: 50px;
 }
+
+.chart-container {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px 25px;
+    /* Increased padding for better spacing */
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chart-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.chart-title {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.row {
+    margin-bottom: 30px;
+    /* Add consistent spacing between rows */
+}
+
+.chart-card {
+    background: #fff;
+    padding: 20px 30px;
+    /* Adjust padding */
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    min-height: 450px;
+    /* Ensure enough space for larger labels */
+}

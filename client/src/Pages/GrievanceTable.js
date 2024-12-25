@@ -209,6 +209,11 @@ const GrievanceTable = () => {
     }
   };
 
+  const totalGrievances = Object.values(grievances).reduce(
+    (acc, categoryGrievances) => acc + categoryGrievances.length,
+    0
+  );
+
   if (loading) {
     return (
       <Container className="text-center mt-5 dm-sans-googleFont">
@@ -422,6 +427,12 @@ const GrievanceTable = () => {
           <Button variant="primary" onClick={handleButtonClick}>
             Submit
           </Button>
+        </Col>
+      </Row>
+      {/* Display the total number of grievances */}
+      <Row className="mb-3">
+        <Col>
+          <h4>Total Grievances: {totalGrievances}</h4>
         </Col>
       </Row>
       {Object.keys(grievances).reduce((acc, category, categoryIdx) => {
